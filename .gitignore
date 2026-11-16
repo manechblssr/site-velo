@@ -1,0 +1,29 @@
+# Dépendances
+node_modules/
+
+# Build (regénéré par GitHub Actions)
+dist/
+
+# Classeur source brut (données personnelles — hors version contrôle)
+/Tableau de Bord Flèches.xlsx
+
+# Outils locaux / skills des agents
+.opencode/
+.impeccable/
+.taste-skill/
+_skills/
+opencode.jsonc
+
+# Audits et rapports générés
+rapport/
+
+# Raccourcis Windows
+*.url
+
+# Python
+__pycache__/
+*.pyc
+
+# Divers
+.DS_Store
+Thumbs.db
