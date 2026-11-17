@@ -423,7 +423,8 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
   const t = makeT(lang)
   const L = useL()
   const [sexe, setSexe] = useState('')
-  const [metal, setMetal] = useState('')
+  const [metaux, setMetaux] = useState([])
+  const basculer = (f) => setMetaux((m) => (m.includes(f) ? m.filter((x) => x !== f) : [...m, f]))
   const [q, setQ] = useState('')
   const total = fleches.length
 
@@ -461,22 +462,26 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
     const qq = norm(q)
     return defis.complete
       .filter((c) => !sexe || c.sexe === sexe)
-      .filter((c) => !metal || compte(c.id, metal) >= total)
+      .filter((c) => !metaux.length || metaux.some((f) => compte(c.id, f) >= total))
       .filter((c) => !qq || norm(`${c.nom} ${c.club}`).includes(qq))
-      .sort((a, b) => (metal ? compte(b.id, metal) - compte(a.id, metal) : 0) || b.nb - a.nb)
+      .sort((a, b) => b.nb - a.nb)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defis.complete, sexe, metal, q, parFormule, total])
+  }, [defis.complete, sexe, metaux, q, parFormule, total])
 
-  /* Quand personne n'a encore la Complète dans ce métal : les plus proches. */
+  /* Métaux cochés que personne n'a encore réalisés : les 10 plus proches. */
   const plusProches = useMemo(() => {
-    if (!metal) return []
-    return participants
-      .map((p) => ({ p, n: compte(p.id, metal) }))
-      .filter((x) => x.n > 0 && (!sexe || x.p.sexe === sexe))
-      .sort((a, b) => b.n - a.n || a.p.nom.localeCompare(b.p.nom))
-      .slice(0, 10)
+    return metaux
+      .filter((f) => !defis.complete.some((c) => (!sexe || c.sexe === sexe) && compte(c.id, f) >= total))
+      .map((f) => ({
+        f,
+        riders: participants
+          .map((p) => ({ p, n: compte(p.id, f) }))
+          .filter((x) => x.n > 0 && (!sexe || x.p.sexe === sexe))
+          .sort((a, b) => b.n - a.n || a.p.nom.localeCompare(b.p.nom))
+          .slice(0, 10),
+      }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [participants, metal, sexe, parFormule])
+  }, [participants, defis.complete, metaux, sexe, parFormule, total])
 
   const parNom = useMemo(() => {
     const m = new Map()
@@ -520,17 +525,17 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
             <option value="F">{L('Femmes', 'Women')}</option>
           </select>
         </div>
-        <div className="toolbar__field">
-          <label htmlFor="cp-metal"><Icon name="medal" size={13} /> {L('Médaille', 'Medal')}</label>
-          <select id="cp-metal" value={metal} onChange={(e) => setMetal(e.target.value)}>
-            <option value="">{L('Toutes', 'All')}</option>
-            {METAUX.map(([f, fr, en, dfr, den]) => (
-              <option key={f} value={f}>
-                {L(`Complète ${dfr} (20 ${fr.toLowerCase()})`, `Complete ${den} (20 ${en.toLowerCase()})`)}
-              </option>
+        <fieldset className="toolbar__field toolbar__metaux">
+          <legend><Icon name="medal" size={13} /> {L('Complète en…', 'Complete in…')}</legend>
+          <div className="toolbar__checks">
+            {METAUX.map(([f, fr, en]) => (
+              <label key={f} className="check">
+                <input type="checkbox" checked={metaux.includes(f)} onChange={() => basculer(f)} />
+                {L(fr, en)} <span className="muted">({parMetal[f]})</span>
+              </label>
             ))}
-          </select>
-        </div>
+          </div>
+        </fieldset>
         <div className="toolbar__field toolbar__field--wide">
           <label htmlFor="cp-q"><Icon name="search" size={13} /> {t('nav.search')}</label>
           <input
@@ -574,50 +579,42 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
 
       <div className="kpis">
         {METAUX.map(([f, fr, en, dfr, den]) => (
-          <button
-            key={f}
-            type="button"
-            className={`kpi kpi--metal${metal === f ? ' is-active' : ''}`}
-            aria-pressed={metal === f}
-            onClick={() => setMetal(metal === f ? '' : f)}
-          >
+          <div key={f} className="kpi kpi--metal">
             <b className="kpi__v">{parMetal[f]}</b>
             <span className="kpi__l">
               <Badge code={f} /> {L(`La Complète ${dfr} : les ${total} Flèches ${dfr}`, `The Complete ${den}: all ${total} Flèches ${den}`)}
             </span>
-          </button>
+          </div>
         ))}
       </div>
 
-      {metal && liste.length === 0 && (
-        <div className="empty-metal">
-          <p>
-            <b>
-              {L(
-                `Personne n'a encore réalisé la Complète ${METAUX.find((m) => m[0] === metal)[3]}.`,
-                `Nobody has achieved the Complete ${METAUX.find((m) => m[0] === metal)[4]} yet.`,
-              )}
-            </b>{' '}
-            {L('Les plus proches :', 'Closest riders:')}
-          </p>
-          <div className="rows-app">
-            {plusProches.map(({ p, n }) => (
-              <div className="row-app" key={p.id}>
-                <span className="row-app__main">
-                  <a className="link" href={`#/annuaire/pid=${p.id}`}>
-                    <b>{p.nom} {p.prenom}</b>
-                  </a>
-                  <span className="muted">{p.sexe === 'F' ? '♀' : '♂'}</span>
-                  <span className="row-app__meta">{nomClub(p.club, lang) || t('f.none')}</span>
-                </span>
-                <span className="row-app__meta">
-                  <Badge code={metal} /> {n}/{total}
-                </span>
-              </div>
-            ))}
+      {plusProches.map(({ f, riders }) => {
+        const m = METAUX.find((x) => x[0] === f)
+        return (
+          <div className="empty-metal" key={f}>
+            <p>
+              <b>{L(`Personne n'a encore réalisé la Complète ${m[3]}.`, `Nobody has achieved the Complete ${m[4]} yet.`)}</b>{' '}
+              {L('Les plus proches :', 'Closest riders:')}
+            </p>
+            <div className="rows-app">
+              {riders.map(({ p, n }) => (
+                <div className="row-app" key={p.id}>
+                  <span className="row-app__main">
+                    <a className="link" href={`#/annuaire/pid=${p.id}`}>
+                      <b>{p.nom} {p.prenom}</b>
+                    </a>
+                    <span className="muted">{p.sexe === 'F' ? '♀' : '♂'}</span>
+                    <span className="row-app__meta">{nomClub(p.club, lang) || t('f.none')}</span>
+                  </span>
+                  <span className="row-app__meta">
+                    <Badge code={f} /> {n}/{total}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })}
 
       <div className="rows-app">
         {liste.map((c) => {

@@ -335,18 +335,24 @@
   border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
-/* KPI cliquables : Complète or / argent / bronze */
-.kpi--metal {
-  text-align: left;
-  font: inherit;
-  color: inherit;
+/* Complète or / argent / bronze */
+.toolbar__metaux { border: 0; margin: 0; padding: 0; min-width: 0; }
+.toolbar__metaux legend { display: flex; align-items: center; gap: 4px; padding: 0; }
+.toolbar__metaux .toolbar__checks { gap: var(--s-3); }
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.kpi--metal:hover { border-color: var(--action); }
-.kpi--metal.is-active {
-  border-color: var(--action);
-  box-shadow: 0 0 0 2px var(--action);
+.check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--action);
+  cursor: pointer;
 }
 .kpi--metal .kpi__l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .metal-counts { display: inline-flex; flex-wrap: wrap; gap: 6px; }
