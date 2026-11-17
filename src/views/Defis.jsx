@@ -59,7 +59,14 @@ export default function Defis({ lang, data }) {
             <Pionnier fleches={fleches} homologations={homologations} participants={participants} />
           )}
           {onglet === 'complete' && (
-            <Complete defis={defis} stats={stats} participants={participants} lang={lang} />
+            <Complete
+              defis={defis}
+              stats={stats}
+              participants={participants}
+              homologations={homologations}
+              fleches={fleches}
+              lang={lang}
+            />
           )}
           {onglet === 'express' && <Express defis={defis} />}
           {onglet === 'combiné' && <Combine />}
@@ -406,11 +413,43 @@ function Pionnier({ fleches, homologations, participants }) {
 
 /* ------------------------------------------------------------------ complète */
 
-function Complete({ defis, stats, participants, lang }) {
+const METAUX = [
+  ['O', 'Or', 'Gold', 'en or', 'in gold'],
+  ['A', 'Argent', 'Silver', 'en argent', 'in silver'],
+  ['B', 'Bronze', 'Bronze', 'en bronze', 'in bronze'],
+]
+
+function Complete({ defis, stats, participants, homologations, fleches, lang }) {
   const t = makeT(lang)
   const L = useL()
   const [sexe, setSexe] = useState('')
+  const [metal, setMetal] = useState('')
   const [q, setQ] = useState('')
+  const total = fleches.length
+
+  /* Pour chaque participant : nombre de Flèches distinctes homologuées dans
+     chaque formule. « La Complète en or » = les 20 Flèches faites en or. */
+  const parFormule = useMemo(() => {
+    const m = new Map()
+    for (const h of homologations) {
+      if (!h.formule) continue
+      let e = m.get(h.pid)
+      if (!e) m.set(h.pid, (e = { O: new Set(), A: new Set(), B: new Set() }))
+      e[h.formule]?.add(h.dest)
+    }
+    const out = new Map()
+    for (const [pid, e] of m) out.set(pid, { O: e.O.size, A: e.A.size, B: e.B.size })
+    return out
+  }, [homologations])
+
+  const compte = (id, f) => parFormule.get(id)?.[f] ?? 0
+
+  const parMetal = useMemo(() => {
+    const r = { O: 0, A: 0, B: 0 }
+    for (const c of defis.complete) for (const [f] of METAUX) if (compte(c.id, f) >= total) r[f] += 1
+    return r
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defis.complete, parFormule, total])
 
   const officiels = useMemo(() => {
     const m = new Map()
@@ -422,9 +461,22 @@ function Complete({ defis, stats, participants, lang }) {
     const qq = norm(q)
     return defis.complete
       .filter((c) => !sexe || c.sexe === sexe)
+      .filter((c) => !metal || compte(c.id, metal) >= total)
       .filter((c) => !qq || norm(`${c.nom} ${c.club}`).includes(qq))
-      .sort((a, b) => b.nb - a.nb)
-  }, [defis.complete, sexe, q])
+      .sort((a, b) => (metal ? compte(b.id, metal) - compte(a.id, metal) : 0) || b.nb - a.nb)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defis.complete, sexe, metal, q, parFormule, total])
+
+  /* Quand personne n'a encore la Complète dans ce métal : les plus proches. */
+  const plusProches = useMemo(() => {
+    if (!metal) return []
+    return participants
+      .map((p) => ({ p, n: compte(p.id, metal) }))
+      .filter((x) => x.n > 0 && (!sexe || x.p.sexe === sexe))
+      .sort((a, b) => b.n - a.n || a.p.nom.localeCompare(b.p.nom))
+      .slice(0, 10)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participants, metal, sexe, parFormule])
 
   const parNom = useMemo(() => {
     const m = new Map()
@@ -446,6 +498,7 @@ function Complete({ defis, stats, participants, lang }) {
         { label: L('Sexe', 'Gender'), value: (c) => c.sexe },
         { label: L('Club', 'Club'), value: (c) => c.club },
         { label: L('Flèches', 'Flèches'), value: (c) => c.nb },
+        ...METAUX.map(([f, fr, en]) => ({ label: L(`Flèches ${fr}`, `${en} Flèches`), value: (c) => compte(c.id, f) })),
         { label: L('Première', 'First'), value: (c) => c.premiere },
         { label: L('Dernière', 'Last'), value: (c) => c.derniere },
         {
@@ -465,6 +518,17 @@ function Complete({ defis, stats, participants, lang }) {
             <option value="">{t('f.all')}</option>
             <option value="H">{L('Hommes', 'Men')}</option>
             <option value="F">{L('Femmes', 'Women')}</option>
+          </select>
+        </div>
+        <div className="toolbar__field">
+          <label htmlFor="cp-metal"><Icon name="medal" size={13} /> {L('Médaille', 'Medal')}</label>
+          <select id="cp-metal" value={metal} onChange={(e) => setMetal(e.target.value)}>
+            <option value="">{L('Toutes', 'All')}</option>
+            {METAUX.map(([f, fr, en, dfr, den]) => (
+              <option key={f} value={f}>
+                {L(`Complète ${dfr} (20 ${fr.toLowerCase()})`, `Complete ${den} (20 ${en.toLowerCase()})`)}
+              </option>
+            ))}
           </select>
         </div>
         <div className="toolbar__field toolbar__field--wide">
@@ -508,6 +572,53 @@ function Complete({ defis, stats, participants, lang }) {
         </div>
       </div>
 
+      <div className="kpis">
+        {METAUX.map(([f, fr, en, dfr, den]) => (
+          <button
+            key={f}
+            type="button"
+            className={`kpi kpi--metal${metal === f ? ' is-active' : ''}`}
+            aria-pressed={metal === f}
+            onClick={() => setMetal(metal === f ? '' : f)}
+          >
+            <b className="kpi__v">{parMetal[f]}</b>
+            <span className="kpi__l">
+              <Badge code={f} /> {L(`La Complète ${dfr} : les ${total} Flèches ${dfr}`, `The Complete ${den}: all ${total} Flèches ${den}`)}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {metal && liste.length === 0 && (
+        <div className="empty-metal">
+          <p>
+            <b>
+              {L(
+                `Personne n'a encore réalisé la Complète ${METAUX.find((m) => m[0] === metal)[3]}.`,
+                `Nobody has achieved the Complete ${METAUX.find((m) => m[0] === metal)[4]} yet.`,
+              )}
+            </b>{' '}
+            {L('Les plus proches :', 'Closest riders:')}
+          </p>
+          <div className="rows-app">
+            {plusProches.map(({ p, n }) => (
+              <div className="row-app" key={p.id}>
+                <span className="row-app__main">
+                  <a className="link" href={`#/annuaire/pid=${p.id}`}>
+                    <b>{p.nom} {p.prenom}</b>
+                  </a>
+                  <span className="muted">{p.sexe === 'F' ? '♀' : '♂'}</span>
+                  <span className="row-app__meta">{nomClub(p.club, lang) || t('f.none')}</span>
+                </span>
+                <span className="row-app__meta">
+                  <Badge code={metal} /> {n}/{total}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="rows-app">
         {liste.map((c) => {
           const p = parNom.get(norm(c.nom))
@@ -526,7 +637,14 @@ function Complete({ defis, stats, participants, lang }) {
                 <span className="row-app__meta">{nomClub(c.club, lang) || t('f.none')}</span>
               </span>
               <span className="row-app__meta">
-                {c.nb} {L('flèches', 'Flèches')} · {fmtDate(c.premiere)} → {fmtDate(c.derniere)}
+                <span className="metal-counts">
+                  {METAUX.map(([f]) => (
+                    <span key={f} className={compte(c.id, f) >= total ? 'metal-count is-full' : 'metal-count'}>
+                      <Badge code={f} /> {compte(c.id, f)}/{total}
+                    </span>
+                  ))}
+                </span>{' '}
+                · {c.nb} {L('flèches', 'Flèches')} · {fmtDate(c.premiere)} → {fmtDate(c.derniere)}
                 {officiel !== undefined && officiel !== c.nb && (
                   <span className="muted"> · {L('onglet', 'sheet')} : {officiel}</span>
                 )}

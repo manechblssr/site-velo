@@ -335,6 +335,24 @@
   border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
+/* KPI cliquables : Complète or / argent / bronze */
+.kpi--metal {
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.kpi--metal:hover { border-color: var(--action); }
+.kpi--metal.is-active {
+  border-color: var(--action);
+  box-shadow: 0 0 0 2px var(--action);
+}
+.kpi--metal .kpi__l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.metal-counts { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.metal-count { opacity: 0.7; white-space: nowrap; }
+.metal-count.is-full { opacity: 1; font-weight: 600; }
+.empty-metal { display: grid; gap: var(--s-3); }
 .kpi__v {
   display: block;
   font-size: 30px;
