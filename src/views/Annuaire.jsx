@@ -26,6 +26,9 @@ const VIDE = {
 /* filtres regroupés dans le panneau « Filtres avancés » */
 const CLES_AVANCEES = ['fede', 'fleche', 'sexe', 'tranche', 'dept', 'pays', 'neo', 'complete']
 
+/* « (vide) » et « ? » du classeur = commune inconnue */
+const commune = (v) => (v && !/^\s*(\(vide\)|\?)\s*$/i.test(v) ? v : '')
+
 export default function Annuaire({ lang, data, routeParam }) {
   const t = makeT(lang)
   const L = pick(lang)
@@ -35,6 +38,7 @@ export default function Annuaire({ lang, data, routeParam }) {
   const [q, setQ] = useState('')
   const [f, setF] = useState(VIDE)
   const [tri, setTri] = useState('nb')
+  const [sens, setSens] = useState(1) // 1 : ordre naturel de la colonne, -1 : inversé
   const [page, setPage] = useState(1)
   const [manager, setManager] = useState(false)
   const [avances, setAvances] = useState(false) // panneau « Filtres avancés »
@@ -116,19 +120,77 @@ export default function Annuaire({ lang, data, routeParam }) {
       out.push({ p, a })
     }
 
-    // 4. tri
+    // 4. tri : ordre naturel de la colonne (A → Z pour le texte, du plus
+    //    grand au plus petit pour les nombres), inversé si sens = -1. Les
+    //    valeurs vides (club, commune) restent toujours en fin de liste.
+    const txt = (a, b) => {
+      if (!a && !b) return 0
+      if (!a) return Infinity
+      if (!b) return -Infinity
+      return a.localeCompare(b, 'fr', { sensitivity: 'base' })
+    }
+    const parNom = (x, y) => x.p.nom.localeCompare(y.p.nom, 'fr') || x.p.prenom.localeCompare(y.p.prenom, 'fr')
     const cmp = {
-      nb: (x, y) => y.a.nb - x.a.nb || x.p.nom.localeCompare(y.p.nom),
+      nb: (x, y) => y.a.nb - x.a.nb,
       km: (x, y) => y.a.km - x.a.km,
-      nom: (x, y) => x.p.nom.localeCompare(y.p.nom) || x.p.prenom.localeCompare(y.p.prenom),
+      nom: parNom,
+      club: (x, y) => txt(nomClub(x.p.club, lang), nomClub(y.p.club, lang)),
+      ville: (x, y) => txt(commune(x.p.ville), commune(y.p.ville)),
       recent: (x, y) => (y.a.derniere || '').localeCompare(x.a.derniere || ''),
       distinctes: (x, y) => y.a.dests.size - x.a.dests.size,
     }[tri]
-    out.sort(cmp)
+    out.sort((x, y) => {
+      const c = cmp(x, y)
+      if (c === Infinity || c === -Infinity) return c > 0 ? 1 : -1
+      return c * sens || y.a.nb - x.a.nb || parNom(x, y)
+    })
     return out
-  }, [q, f, tri, participants, homologations])
+  }, [q, f, tri, sens, participants, homologations, lang])
 
-  useEffect(() => setPage(1), [q, f, tri])
+  useEffect(() => setPage(1), [q, f, tri, sens])
+
+  /* Rang au nombre total de flèches homologuées, dans la sélection en cours :
+     ex aequo au même rang (1, 2, 2, 4…), quel que soit l'ordre d'affichage. */
+  const rangs = useMemo(() => {
+    const nbs = liste.map((x) => x.a.nb).sort((a, b) => b - a)
+    const premierRang = new Map()
+    nbs.forEach((n, i) => {
+      if (!premierRang.has(n)) premierRang.set(n, i + 1)
+    })
+    return premierRang
+  }, [liste])
+
+  /* Clic sur un en-tête : trie sur la colonne, un second clic inverse. */
+  const trierPar = (cle) => {
+    if (cle === tri) setSens((x) => -x)
+    else {
+      setTri(cle)
+      setSens(1)
+    }
+  }
+  const enTete = (cle, libelle, className = '') => {
+    const actif = tri === cle
+    const croissant = ['nom', 'club', 'ville'].includes(cle) ? sens > 0 : sens < 0
+    return (
+      <th
+        scope="col"
+        className={`th-click${className ? ` ${className}` : ''}${actif ? ' is-sorted' : ''}`}
+        aria-sort={actif ? (croissant ? 'ascending' : 'descending') : 'none'}
+      >
+        <button
+          type="button"
+          className={`th-sort${actif ? ' is-active' : ''}`}
+          onClick={() => trierPar(cle)}
+          title={L('Cliquer pour trier', 'Click to sort')}
+        >
+          {libelle}
+          <span className="th-sort__ico" aria-hidden="true">
+            {actif ? (croissant ? '▲' : '▼') : '↕'}
+          </span>
+        </button>
+      </th>
+    )
+  }
 
   const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
   const visible = liste.slice((page - 1) * PAR_PAGE, page * PAR_PAGE)
@@ -137,6 +199,7 @@ export default function Annuaire({ lang, data, routeParam }) {
     downloadCSV(
       'annuaire-fleches-de-france.csv',
       [
+        { label: L('Rang (flèches)', 'Rank (Flèches)'), value: (x) => rangs.get(x.a.nb) },
         { label: L('Nom', 'Last name'), value: (x) => x.p.nom },
         { label: L('Prénom', 'First name'), value: (x) => x.p.prenom },
         { label: L('Sexe', 'Gender'), value: (x) => x.p.sexe },
@@ -343,8 +406,17 @@ export default function Annuaire({ lang, data, routeParam }) {
 
             <div className="toolbar__field toolbar__field--sort">
               <label htmlFor="an-tri"><Icon name="list" size={13} /> {t('f.sort')}</label>
-              <select id="an-tri" value={tri} onChange={(e) => setTri(e.target.value)}>
+              <select
+                id="an-tri"
+                value={tri}
+                onChange={(e) => {
+                  setTri(e.target.value)
+                  setSens(1)
+                }}
+              >
                 <option value="nb">{L('Nombre de flèches', 'Number of Flèches')}</option>
+                <option value="club">{L('Club (A → Z)', 'Club (A → Z)')}</option>
+                <option value="ville">{L('Commune (A → Z)', 'Town (A → Z)')}</option>
                 <option value="distinctes">{L('Flèches distinctes', 'Distinct Flèches')}</option>
                 <option value="km">{L('Kilomètres', 'Kilometres')}</option>
                 <option value="recent">{L('Dernière participation', 'Most recent ride')}</option>
@@ -413,11 +485,15 @@ export default function Annuaire({ lang, data, routeParam }) {
             <table className="table-app table-app--lite">
               <thead>
                 <tr>
-                  <th scope="col">{t('t.name')}</th>
-                  <th scope="col">{t('t.club')}</th>
-                  <th scope="col">{t('t.place')}</th>
+                  <th scope="col" className="num col-rang">
+                    {L('Rang', 'Rank')}
+                  </th>
+                  {enTete('nom', t('t.name'), 'th-click--left')}
+                  {enTete('club', t('t.club'), 'th-click--left')}
+                  {enTete('ville', t('t.place'), 'th-click--left')}
+                  {enTete('nb', t('t.nb'), 'num')}
                   <th scope="col" className="num">
-                    {t('t.nb')} / {fleches.length}
+                    {L('Distinctes', 'Distinct')}
                   </th>
                   <th scope="col">{t('t.formule')}</th>
                   <th scope="col">
@@ -428,6 +504,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               <tbody>
                 {visible.map(({ p, a }) => (
                   <tr key={p.id}>
+                    <td className="num col-rang">{rangs.get(a.nb)}</td>
                     <th scope="row">
                       <button
                         type="button"
@@ -441,16 +518,19 @@ export default function Annuaire({ lang, data, routeParam }) {
                       )}
                       {manager && p.tel && <span className="tel"> · {p.tel}</span>}
                     </th>
-                    <td>{nomClub(p.club, lang) || '—'}</td>
-                    <td>
-                      {p.ville || '—'}
+                    <td className={tri === 'club' ? 'is-sorted' : ''}>{nomClub(p.club, lang) || '—'}</td>
+                    <td className={tri === 'ville' ? 'is-sorted' : ''}>
+                      {commune(p.ville) || '—'}
                       {p.dept ? <span className="muted"> ({p.dept})</span> : null}
                       {p.pays && !/^france$/i.test(p.pays) ? (
                         <span className="muted"> · {p.pays}</span>
                       ) : null}
                     </td>
+                    <td className={`num${tri === 'nb' ? ' is-sorted' : ''}`}>
+                      <b className="nb-dist">{a.nb}</b>
+                    </td>
                     <td className="num">
-                      <b className="nb-dist">{a.dests.size}</b>
+                      {a.dests.size}
                       <span className="muted"> / {fleches.length}</span>
                     </td>
                     <td>

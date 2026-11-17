@@ -192,14 +192,14 @@
 }
 /* Annuaire : une ligne = l'essentiel, le détail vit dans la fiche */
 .table-app--lite {
-  min-width: 940px;
+  min-width: 1020px;
 }
 .table-app--lite tbody th {
   font-weight: 600;
   min-width: 176px;
 }
-.table-app--lite tbody td:nth-child(2),
-.table-app--lite tbody td:nth-child(3) {
+.table-app--lite tbody td:nth-child(3),
+.table-app--lite tbody td:nth-child(4) {
   min-width: 132px;
   max-width: 210px;
 }
@@ -5552,4 +5552,19 @@ main > .hero {
 
 .table-scroll + .empty-metal {
   margin-top: var(--s-4);
+}
+
+/* Palmarès individuel : en-têtes texte alignés à gauche, colonne du rang */
+.table-app thead th.th-click--left .th-sort {
+  justify-content: flex-start;
+}
+.table-app .col-rang {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.table-app td.is-sorted.num .nb-dist,
+.table-app td.is-sorted {
+  font-weight: 600;
 }
