@@ -23,8 +23,8 @@ const ONGLETS = [
   ],
   [
     'express', 'La Complète express', 'The Express Complete', 'zap',
-    'Les 20 Flèches homologuées au cours d’une seule et même saison.',
-    'All 20 Flèches validated within one single season.',
+    'Les 20 Flèches homologuées en 12 mois au plus.',
+    'All 20 Flèches validated within 12 months at most.',
   ],
   [
     'combine', 'Le combiné', 'The combined', 'layers',
@@ -901,49 +901,100 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
 function Express({ defis }) {
   const L = useL()
   const lang = useLang()
-  const liste = [...defis.express].sort((a, b) => a.annee - b.annee)
-  const kmMax = Math.max(0, ...liste.map((e) => e.km || 0))
+  const liste = defis.express ?? []
+  const aVerifier = defis.expressAVerifier ?? []
+  const plusRapide = liste.filter((e) => e.mode === 'dates').sort((a, b) => a.jours - b.jours)[0]
   return (
     <>
-      <div className="kpis">
+      <div className="kpis kpis--complete">
         <div className="kpi">
           <b className="kpi__v">{liste.length}</b>
-          <span className="kpi__l">{L('Complètes express vérifiées', 'Verified Express Completes')}</span>
+          <span className="kpi__l">{L('Complètes express (20 Flèches en 12 mois)', 'Express Completes (20 Flèches in 12 months)')}</span>
         </div>
         <div className="kpi">
-          <b className="kpi__v">{fmt(kmMax)}</b>
-          <span className="kpi__l">{L('Kilomètres sur une seule saison (record)', 'Kilometres in a single season (record)')}</span>
+          <b className="kpi__v">{plusRapide ? `${plusRapide.jours} j` : '—'}</b>
+          <span className="kpi__l">
+            {plusRapide
+              ? L(`La plus rapide (${plusRapide.nom})`, `Fastest (${plusRapide.nom})`)
+              : L('La plus rapide', 'Fastest')}
+          </span>
+        </div>
+        <div className="kpi">
+          <b className="kpi__v">{aVerifier.length}</b>
+          <span className="kpi__l">{L('Cas à vérifier (dates inconnues)', 'Cases to check (dates unknown)')}</span>
         </div>
       </div>
 
-      <div className="rows-app">
-        {liste.map((e) => (
-          <div className="row-app" key={`${e.nom}-${e.annee}`}>
-            <span className="row-app__main">
-              <a className="link" href={`#/annuaire/pid=${e.id}`}>
-                <b>{e.nom}</b>
-              </a>
-              <span className="muted">{e.sexe === 'F' ? '♀' : '♂'}</span>
-              <span className="row-app__meta">{nomClub(e.club, lang) || L('Sans club', 'No club')}</span>
-            </span>
-            <span className="row-app__meta">
-              <b>{L(`Saison ${e.annee}`, `${e.annee} season`)}</b> ·{' '}
-              {L(`${e.nbDest} flèches distinctes`, `${e.nbDest} distinct Flèches`)} · {fmt(e.km)} km
-              {e.debut && e.fin && (
-                <span className="muted">
-                  {' '}
-                  · {fmtDate(e.debut)} → {fmtDate(e.fin)}
-                </span>
-              )}
-            </span>
-          </div>
-        ))}
+      <div className="table-scroll">
+        <table className="table-app table-app--stack">
+          <thead>
+            <tr>
+              <th scope="col">{L('Cycliste', 'Rider')}</th>
+              <th scope="col">{L('Période des 20 Flèches', 'Period of the 20 Flèches')}</th>
+              <th scope="col" className="num">{L('Durée', 'Duration')}</th>
+              <th scope="col" className="num">{L('Homologations', 'Validated rides')}</th>
+              <th scope="col" className="num">Km</th>
+            </tr>
+          </thead>
+          <tbody>
+            {liste.map((e) => (
+              <tr key={`${e.id}-${e.annee}`}>
+                <th scope="row">
+                  <span className="cell-rider">
+                    <a className="link" href={`#/annuaire/pid=${e.id}`}>
+                      {e.nom}
+                    </a>
+                    <span className="muted">{e.sexe === 'F' ? ' ♀' : ' ♂'}</span>
+                  </span>
+                  <span className="cell-sub">{nomClub(e.club, lang) || L('Sans club', 'No club')}</span>
+                </th>
+                <td data-label={L('Période', 'Period')} className="cell-wide">
+                  {e.mode === 'dates'
+                    ? L(`du ${fmtDate(e.debut)} au ${fmtDate(e.fin)}`, `${fmtDate(e.debut)} to ${fmtDate(e.fin)}`)
+                    : L(`saison ${e.annee} (dates non connues)`, `${e.annee} season (dates unknown)`)}
+                </td>
+                <td data-label={L('Durée', 'Duration')} className="num">
+                  {e.mode === 'dates' ? L(`${e.jours} jours`, `${e.jours} days`) : L('≤ 12 mois', '≤ 12 months')}
+                </td>
+                <td data-label={L('Homologations', 'Validated rides')} className="num">
+                  {e.nb}
+                </td>
+                <td data-label="Km" className="num">
+                  {fmt(e.km)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+
+      {aVerifier.length > 0 && (
+        <div className="empty-metal">
+          <p>
+            <b>{L('À vérifier', 'To check')}</b>{' '}
+            {L(
+              "— les 20 Flèches sur deux millésimes consécutifs, mais le classeur ne donne que l'année : impossible de savoir si elles tiennent en 12 mois. Ces cas ne sont pas comptés.",
+              '— all 20 Flèches over two consecutive seasons, but the workbook only gives the year: no way to tell whether they fit in 12 months. These cases are not counted.',
+            )}
+          </p>
+          <ul className="proches">
+            {aVerifier.map((e) => (
+              <li key={e.id}>
+                <a className="link" href={`#/annuaire/pid=${e.id}`}>
+                  <b>{e.nom}</b>
+                </a>
+                <span className="muted proches__club">{nomClub(e.club, lang) || L('Sans club', 'No club')}</span>
+                <span className="muted">{e.annees.join(' + ')}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="note">
         {L(
-          "Chaque cas est vérifié sur le journal : les 20 destinations distinctes sont homologuées dans un même millésime. L'année des Flèches court du 1er octobre au 30 septembre suivant (règlement, article 3) : la saison 2026 commence donc le 1er octobre 2025. Pour les éditions anciennes, seule l'année est connue.",
-          'Each case is checked against the log: all 20 distinct destinations are validated within one and the same season. The Flèches year runs from 1 October to 30 September of the following year (rules, article 3), so the 2026 season starts on 1 October 2025. For older editions only the year is known.',
+          "Règle : les 20 Flèches homologuées en 12 mois au plus. Le calcul porte sur tout le journal : pour les homologations datées (depuis 2022), on cherche la plus courte période de moins de 12 mois contenant les 20 destinations, même à cheval sur deux saisons ; pour les éditions anciennes, seule l'année est connue et les 20 Flèches doivent figurer dans un même millésime.",
+          'Rule: all 20 Flèches validated within 12 months at most. The whole log is scanned: for dated rides (since 2022), we look for the shortest period under 12 months containing the 20 destinations, even across two seasons; for older editions only the year is known and the 20 Flèches must fall in a single season.',
         )}
       </div>
     </>

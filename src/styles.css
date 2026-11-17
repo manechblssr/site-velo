@@ -5549,3 +5549,7 @@ main > .hero {
 .table-app td.is-sorted {
   font-weight: 600;
 }
+
+.table-scroll + .empty-metal {
+  margin-top: var(--s-4);
+}

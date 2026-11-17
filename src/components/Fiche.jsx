@@ -233,23 +233,19 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
               <p className="fx-express__t">
                 <Icon name="zap" size={15} />
                 <b>
-                  {L(
-                    `Complète express — saison ${express.annee}`,
-                    `Express Complete — ${express.annee} season`,
-                  )}
+                  {L('Complète express — 20 Flèches en 12 mois', 'Express Complete — 20 Flèches in 12 months')}
                 </b>
               </p>
               <p className="fx-express__d">
-                {L(
-                  `Les 20 Flèches homologuées sur la seule année ${express.annee} (du ${fmtDate(express.saisonDebut)} au ${fmtDate(express.saisonFin)}, année des Flèches selon l'article 3 du règlement)`,
-                  `All 20 Flèches validated within the single ${express.annee} season (${fmtDate(express.saisonDebut)} to ${fmtDate(express.saisonFin)}, the Flèches year under article 3 of the rules)`,
-                )}
-                {express.debut && express.fin
+                {express.mode === 'dates'
                   ? L(
-                      ` : première le ${fmtDate(express.debut)}, dernière le ${fmtDate(express.fin)}`,
-                      `: first on ${fmtDate(express.debut)}, last on ${fmtDate(express.fin)}`,
+                      `Du ${fmtDate(express.debut)} au ${fmtDate(express.fin)}, soit ${express.jours} jours`,
+                      `From ${fmtDate(express.debut)} to ${fmtDate(express.fin)}, ${express.jours} days`,
                     )
-                  : ''}
+                  : L(
+                      `Sur la saison ${express.annee} (du ${fmtDate(express.saisonDebut)} au ${fmtDate(express.saisonFin)} ; dates exactes non connues)`,
+                      `Within the ${express.annee} season (${fmtDate(express.saisonDebut)} to ${fmtDate(express.saisonFin)}; exact dates unknown)`,
+                    )}
                 {' · '}
                 {fmt(express.km)} km.
               </p>

@@ -38,7 +38,9 @@ export function loadAll() {
     ([index, fleches, participants, homologations, clubs, stats, defis, departements]) => {
       normaliserDestinations(fleches.fleches, participants.rows, homologations.rows)
       licenceDerniere(participants.rows, homologations.rows, defis)
-      defis.express = verifierExpress(defis.express ?? [], fleches.fleches, homologations.rows)
+      const express = calculerExpress(participants.rows, fleches.fleches, homologations.rows)
+      defis.express = express.laureats
+      defis.expressAVerifier = express.aVerifier
       return {
       meta: index.meta,
       fleches: fleches.fleches,
@@ -95,38 +97,119 @@ function licenceDerniere(participants, homologations, defis) {
 }
 
 /* --- La Complète express ------------------------------------------------
-   Défi : les 20 Flèches homologuées au cours d'une seule et même année.
-   L'année des Flèches (règlement, art. 3) court du 1er octobre au
-   30 septembre suivant et porte le millésime de l'année de fin : la saison
-   2026 va du 1er octobre 2025 au 30 septembre 2026. Chaque cas annoncé par
-   le classeur est revérifié sur le journal (20 destinations distinctes dans
-   le millésime, destinations alignées sur le référentiel) et complété des
-   dates réelles de la première et de la dernière flèche de la saison. */
+   Défi : les 20 Flèches homologuées en 12 mois au plus. Le calcul est fait
+   sur tout le journal, cycliste par cycliste, et ne dépend plus de la liste
+   du classeur :
+   - dates connues (depuis 2022) : fenêtre glissante de 12 mois — de la
+     première Flèche à la 20e destination distincte, la plus courte trouvée ;
+   - éditions anciennes (seule l'année est connue) : les 20 destinations
+     dans un même millésime, qui couvre une année des Flèches (art. 3 :
+     du 1er octobre au 30 septembre) ;
+   - 20 destinations réparties sur deux millésimes consécutifs sans dates :
+     impossible de savoir si cela tient en 12 mois, le cas est signalé
+     « à vérifier » sans être compté. */
 
-function verifierExpress(liste, fleches, homologations) {
+const datePrecise = (h) => Boolean(h.date) && !h.date.endsWith('-01-01')
+
+function plus12Mois(iso) {
+  const [y, m, d] = iso.split('-').map(Number)
+  const fin = new Date(Date.UTC(y + 1, m - 1, d))
+  // 29 février + 1 an → 28 février
+  if (fin.getUTCMonth() !== m - 1) fin.setUTCDate(0)
+  return fin.toISOString().slice(0, 10)
+}
+
+const jours = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000)
+
+function calculerExpress(participants, fleches, homologations) {
   const total = fleches.length
   const ids = new Set(fleches.map((f) => f.id))
-  return liste
-    .map((e) => {
-      const mes = homologations
-        .filter((h) => h.pid === e.id && h.annee === e.annee && ids.has(h.dest))
-        .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
-      const dests = new Set(mes.map((h) => h.dest))
-      // les anciennes éditions n'ont que l'année (date ramenée au 1er janvier)
-      const precises = mes.filter((h) => h.date && !h.date.endsWith('-01-01'))
-      return {
-        ...e,
-        nbDest: dests.size,
-        nb: mes.length,
-        km: mes.reduce((a, h) => a + (h.km || 0), 0),
-        debut: precises.length ? precises[0].date : null,
-        fin: precises.length ? precises[precises.length - 1].date : null,
-        saisonDebut: `${e.annee - 1}-10-01`,
-        saisonFin: `${e.annee}-09-30`,
-        valide: dests.size >= total,
+  const parPid = new Map()
+  for (const h of homologations) {
+    if (!ids.has(h.dest)) continue
+    let a = parPid.get(h.pid)
+    if (!a) parPid.set(h.pid, (a = []))
+    a.push(h)
+  }
+
+  const laureats = []
+  const aVerifier = []
+  for (const p of participants) {
+    const mes = parPid.get(p.id)
+    if (!mes || new Set(mes.map((h) => h.dest)).size < total) continue
+    const ident = { id: p.id, nom: `${p.nom} ${p.prenom}`, sexe: p.sexe, club: p.club }
+
+    // 1. fenêtre glissante de 12 mois sur les dates connues
+    const precises = mes.filter(datePrecise).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    let best = null
+    for (let i = 0; i < precises.length; i++) {
+      const debut = precises[i].date
+      const limite = plus12Mois(debut)
+      const vues = new Set()
+      for (let j = i; j < precises.length && precises[j].date < limite; j++) {
+        vues.add(precises[j].dest)
+        if (vues.size === total) {
+          const fin = precises[j].date
+          if (!best || jours(debut, fin) < jours(best.debut, best.fin)) best = { debut, fin }
+          break
+        }
       }
-    })
-    .filter((e) => e.valide)
+    }
+    if (best) {
+      const dans = precises.filter((h) => h.date >= best.debut && h.date <= best.fin)
+      laureats.push({
+        ...ident,
+        mode: 'dates',
+        debut: best.debut,
+        fin: best.fin,
+        jours: jours(best.debut, best.fin),
+        annee: Number(best.fin.slice(0, 4)),
+        nb: dans.length,
+        nbDest: new Set(dans.map((h) => h.dest)).size,
+        km: dans.reduce((a, h) => a + (h.km || 0), 0),
+      })
+      continue
+    }
+
+    // 2. éditions anciennes : un millésime complet
+    const parAn = new Map()
+    for (const h of mes) {
+      let s = parAn.get(h.annee)
+      if (!s) parAn.set(h.annee, (s = []))
+      s.push(h)
+    }
+    const saison = [...parAn.entries()]
+      .filter(([, hs]) => new Set(hs.map((h) => h.dest)).size >= total)
+      .sort((a, b) => a[0] - b[0])[0]
+    if (saison) {
+      const [annee, hs] = saison
+      laureats.push({
+        ...ident,
+        mode: 'saison',
+        annee,
+        saisonDebut: `${annee - 1}-10-01`,
+        saisonFin: `${annee}-09-30`,
+        nb: hs.length,
+        nbDest: new Set(hs.map((h) => h.dest)).size,
+        km: hs.reduce((a, h) => a + (h.km || 0), 0),
+      })
+      continue
+    }
+
+    // 3. deux millésimes consécutifs sans dates : à vérifier
+    for (const [annee, hs] of parAn) {
+      const suiv = parAn.get(annee + 1)
+      if (!suiv) continue
+      const tout = [...hs, ...suiv]
+      if (tout.some(datePrecise)) continue
+      if (new Set(tout.map((h) => h.dest)).size >= total) {
+        aVerifier.push({ ...ident, annees: [annee, annee + 1] })
+        break
+      }
+    }
+  }
+  laureats.sort((a, b) => (a.debut || `${a.annee}`).localeCompare(b.debut || `${b.annee}`))
+  return { laureats, aVerifier }
 }
 
 /* --- Recherche sans accent ni casse ------------------------------------- */
