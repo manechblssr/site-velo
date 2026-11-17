@@ -35,7 +35,9 @@ export function loadAll() {
     loadJSON('defis.json'),
     loadJSON('departements.json'),
   ]).then(
-    ([index, fleches, participants, homologations, clubs, stats, defis, departements]) => ({
+    ([index, fleches, participants, homologations, clubs, stats, defis, departements]) => {
+      normaliserDestinations(fleches.fleches, participants.rows, homologations.rows)
+      return {
       meta: index.meta,
       fleches: fleches.fleches,
       participants: participants.rows,
@@ -44,8 +46,22 @@ export function loadAll() {
       stats,
       defis,
       departements: departements.rows,
-    }),
+      }
+    },
   )
+}
+
+/* Le classeur source nomme parfois une destination autrement que le
+   référentiel (« LE MONT SAINT MICHEL » contre « MONT ST MICHEL ») : sans
+   cet alignement, la flèche n'apparaissait jamais validée dans les fiches,
+   la carte d'un participant ni le filtre par flèche de l'annuaire. */
+const ALIAS_DEST = { 'LE MONT SAINT MICHEL': 'MONT ST MICHEL', 'MONT SAINT MICHEL': 'MONT ST MICHEL' }
+
+function normaliserDestinations(fleches, participants, homologations) {
+  const ids = new Set(fleches.map((f) => f.id))
+  const canon = (d) => (ids.has(d) ? d : (ALIAS_DEST[d] ?? d))
+  for (const h of homologations) h.dest = canon(h.dest)
+  for (const p of participants) if (Array.isArray(p.dests)) p.dests = [...new Set(p.dests.map(canon))]
 }
 
 /* --- Recherche sans accent ni casse ------------------------------------- */

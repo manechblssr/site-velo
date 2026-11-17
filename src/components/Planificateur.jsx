@@ -51,11 +51,11 @@ const ETAPES = [
   { pct: 1, label: 'Arrivée' },
 ]
 
-export default function Planificateur({ fleches, onClose }) {
+export default function Planificateur({ fleches, initialId, onClose }) {
   const box = useRef(null)
   const retour = useRef(null)
 
-  const [flecheId, setFlecheId] = useState(fleches[0]?.id ?? '')
+  const [flecheId, setFlecheId] = useState(initialId ?? fleches[0]?.id ?? '')
   const [formule, setFormule] = useState('O')
   const [date, setDate] = useState(isoJour())
   const [heure, setHeure] = useState('07:00')
@@ -128,204 +128,200 @@ export default function Planificateur({ fleches, onClose }) {
 
   const nomF = FORMULES.find((f) => f.code === formule)?.nom ?? ''
 
+  const pctEtape = (pct) => `${pct * 100}%`
+  const nuits = plan ? Math.max(0, plan.jours - 1) : 0
+
   return (
     <>
       <div className="drawer-backdrop" onClick={onClose} />
       <div
-        className="planif"
+        className="planif pl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="planif-titre"
         tabIndex={-1}
         ref={box}
       >
-        <div className="drawer__head planif__head">
+        <header className="pl-head">
+          <span className="pl-head__ico" aria-hidden="true">
+            <Icon name="calculator" size={22} />
+          </span>
           <div>
-            <p className="t-label muted">Sans classeur · calcul instantané</p>
-            <h2 className="t-h3" id="planif-titre">
-              <Icon name="calculator" size={20} className="planif__titre-ico" />
+            <p className="pl-kicker">Sans classeur · calcul instantané</p>
+            <h2 id="planif-titre" className="pl-title">
               Planifiez votre Flèche
             </h2>
-            <p className="planif__intro">
-              Choisissez une flèche, une formule et votre heure de départ : le plan de route
-              s'écrit tout seul, délais officiels à l'appui.
+            <p className="pl-intro">
+              Choisissez une flèche, une formule et votre départ : le plan de route s’écrit tout
+              seul, délais officiels à l’appui.
             </p>
           </div>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Fermer">
+          <button type="button" className="pl-close" onClick={onClose} aria-label="Fermer">
             <Icon name="x" size={18} />
           </button>
-        </div>
+        </header>
 
-        <div className="planif__fields">
-          <div className="toolbar__field toolbar__field--wide">
-            <label htmlFor="planif-fleche">
-              <Icon name="map-pin" size={13} /> Flèche
-            </label>
-            <select
-              id="planif-fleche"
-              value={flecheId}
-              onChange={(e) => setFlecheId(e.target.value)}
-            >
-              {fleches.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.nom} — {fmt(f.km)} km · {fmt(f.dplus)} m
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="planif__formules" role="group" aria-labelledby="planif-formule-lbl">
-            <span className="planif__legend" id="planif-formule-lbl">
-              <Icon name="medal" size={13} /> Formule visée
-            </span>
-            {FORMULES.map((f) => (
-              <button
-                key={f.code}
-                type="button"
-                className={`chip${formule === f.code ? ' chip--actif' : ''}`}
-                aria-pressed={formule === f.code}
-                onClick={() => setFormule(f.code)}
-              >
-                {f.nom} · {fleche.delais[f.code]}
-              </button>
-            ))}
-          </div>
-
-          <div className="toolbar__field">
-            <label htmlFor="planif-date">
-              <Icon name="calendar" size={13} /> Date de départ
-            </label>
-            <input
-              id="planif-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-          <div className="toolbar__field">
-            <label htmlFor="planif-heure">
-              <Icon name="clock" size={13} /> Heure de départ
-            </label>
-            <input
-              id="planif-heure"
-              type="time"
-              value={heure}
-              onChange={(e) => setHeure(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {!plan ? (
-          <p className="note">Délai officiel illisible pour cette formule.</p>
-        ) : (
-          <>
-            <div className="kpis planif__kpis">
-              <div className="kpi">
-                <b className="kpi__v">{fmtDuree(plan.duree)}</b>
-                <span className="kpi__l">Délai {nomF} — {fleche.delais[formule]}</span>
-              </div>
-              <div className="kpi">
-                <b className="kpi__v">{F_DATE.format(plan.fin)}</b>
-                <span className="kpi__l">Arrivée au plus tard</span>
-              </div>
-              <div className="kpi">
-                <b className="kpi__v">{plan.allure.toFixed(1)} km/h</b>
-                <span className="kpi__l">Allure minimale moyenne</span>
-              </div>
-              <div className="kpi">
-                <b className="kpi__v">{fmt(Math.round(plan.dplusH))} m/h</b>
-                <span className="kpi__l">Dénivelé à l'heure</span>
+        <div className="pl-body">
+          {/* ----------------------------------------------- paramètres */}
+          <div className="pl-form">
+            <div className="pl-field pl-field--wide">
+              <label htmlFor="planif-fleche">
+                <Icon name="map-pin" size={14} /> Flèche
+              </label>
+              <div className="pl-select">
+                <select id="planif-fleche" value={flecheId} onChange={(e) => setFlecheId(e.target.value)}>
+                  {fleches.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nom} — {fmt(f.km)} km · {fmt(f.dplus)} m D+
+                    </option>
+                  ))}
+                </select>
+                <Icon name="chevron-down" size={16} />
               </div>
             </div>
 
-            <div className="planif__cols">
-              <section className="planif__bloc" aria-labelledby="planif-etape">
-                <h3 className="t-label planif__h" id="planif-etape">
-                  <Icon name="route" size={14} /> Repères horaires
+            <div className="pl-field pl-field--wide" role="group" aria-labelledby="planif-formule-lbl">
+              <span className="pl-label" id="planif-formule-lbl">
+                <Icon name="medal" size={14} /> Formule visée
+              </span>
+              <div className="pl-formules">
+                {FORMULES.map((f) => (
+                  <button
+                    key={f.code}
+                    type="button"
+                    className={`pl-formule pl-formule--${f.code}`}
+                    aria-pressed={formule === f.code}
+                    onClick={() => setFormule(f.code)}
+                  >
+                    <span className="pl-formule__nom">{f.nom}</span>
+                    <b>{fleche.delais[f.code]}</b>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pl-field">
+              <label htmlFor="planif-date">
+                <Icon name="calendar" size={14} /> Date de départ
+              </label>
+              <input id="planif-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="pl-field">
+              <label htmlFor="planif-heure">
+                <Icon name="clock" size={14} /> Heure de départ
+              </label>
+              <input id="planif-heure" type="time" value={heure} onChange={(e) => setHeure(e.target.value)} />
+            </div>
+          </div>
+
+          {!plan ? (
+            <p className="note">Délai officiel illisible pour cette formule.</p>
+          ) : (
+            <div className="pl-result" key={`${fleche.id}-${formule}`}>
+              {/* --------------------------------------------- résultat */}
+              <div className="pl-hero">
+                <div>
+                  <p className="pl-hero__lbl">
+                    <Icon name="flag" size={14} /> Arrivée au plus tard
+                  </p>
+                  <p className="pl-hero__v">{F_DATE.format(plan.fin)}</p>
+                  <p className="pl-hero__sub">
+                    Départ {F_DATE.format(plan.debut)} · délai {nomF} {fleche.delais[formule]}
+                  </p>
+                </div>
+                <ul className="pl-kpis">
+                  <li>
+                    <Icon name="timer" size={16} />
+                    <b>{fmtDuree(plan.duree)}</b>
+                    <span>délai</span>
+                  </li>
+                  <li>
+                    <Icon name="gauge" size={16} />
+                    <b>{plan.allure.toFixed(1)} km/h</b>
+                    <span>allure minimale</span>
+                  </li>
+                  <li>
+                    <Icon name="mountain" size={16} />
+                    <b>{fmt(Math.round(plan.dplusH))} m/h</b>
+                    <span>de D+</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* ---------------------------------- frise des repères */}
+              <section className="pl-frise" aria-labelledby="planif-etape">
+                <h3 className="pl-h" id="planif-etape">
+                  <Icon name="route" size={15} /> Repères horaires
+                  <span>au rythme moyen minimal</span>
                 </h3>
-                <ul className="planif__steps">
+                <div className="pl-track" aria-hidden="true">
+                  <span className="pl-track__fill" />
+                  <span className="pl-track__bike" style={{ '--to': '100%' }}>
+                    <Icon name="bike" size={16} />
+                  </span>
                   {plan.etapes.map((e) => (
-                    <li key={e.label} className={e.pct === 0 || e.pct === 1 ? 'is-borne' : ''}>
-                      <span className="planif__step-km">{fmt(e.km)} km</span>
-                      <span className="planif__step-label">{e.label}</span>
-                      <b className="planif__step-h">{F_HEURE.format(e.heure)}</b>
+                    <i key={e.label} style={{ left: pctEtape(e.pct) }} />
+                  ))}
+                </div>
+                <ol className="pl-steps">
+                  {plan.etapes.map((e) => (
+                    <li key={e.label} style={{ '--x': pctEtape(e.pct) }}>
+                      <b>{F_HEURE.format(e.heure)}</b>
+                      <span>{fmt(e.km)} km</span>
+                      <em>{e.label}</em>
                     </li>
                   ))}
-                </ul>
-                <p className="planif__note">
-                  Répartition indicative au rythme moyen : le contrôle se fait à l'arrivée.
-                </p>
-              </section>
-
-              <section className="planif__bloc" aria-labelledby="planif-reperes">
-                <h3 className="t-label planif__h" id="planif-reperes">
-                  <Icon name="info" size={14} /> Le parcours
-                </h3>
-                <ul className="planif__rows">
-                  <li>
-                    <span>Distance</span>
-                    <b>{fmt(fleche.km)} km</b>
-                  </li>
-                  <li>
-                    <span>Dénivelé positif</span>
-                    <b>{fmt(fleche.dplus)} m</b>
-                  </li>
-                  <li>
-                    <span>
-                      <Icon name="map-pin" size={13} /> Départ décalé
-                    </span>
-                    <b>
-                      {fleche.depart.commune} · {fmt(fleche.depart.km)} km
-                    </b>
-                  </li>
-                  <li>
-                    <span>
-                      <Icon name="bike" size={13} /> Formules attendues
-                    </span>
-                    <b>
-                      Or {fmt(fleche.stats.O)} · Argent {fmt(fleche.stats.A)} · Bronze{' '}
-                      {fmt(fleche.stats.B)}
-                    </b>
-                  </li>
-                  {plan.jours > 1 && (
-                    <li>
-                      <span>
-                        <Icon name="moon" size={13} /> Sur {plan.jours} journées
-                      </span>
-                      <b>{fmt(Math.round(plan.kmJour))} km/jour minimum</b>
-                    </li>
-                  )}
-                </ul>
-                <p className="planif__note">
+                </ol>
+                <p className="pl-note">
+                  <Icon name="info" size={13} />{' '}
                   {plan.jours > 1
-                    ? 'Délai long : répartissez le parcours sur plusieurs journées avec dormées autorisées.'
-                    : 'Délai court : parcours à réaliser en une traite, sans dormir sur le parcours.'}
+                    ? `Délai long : ${nuits} nuit${nuits > 1 ? 's' : ''} possible${nuits > 1 ? 's' : ''}, soit au moins ${fmt(
+                        Math.round(plan.kmJour),
+                      )} km par jour sur ${plan.jours} journées.`
+                    : 'Délai court : parcours à réaliser d’une traite, sans dormir sur le parcours. Seule l’heure d’arrivée est contrôlée.'}
                 </p>
               </section>
-            </div>
 
-            <div className="planif__actions">
-              <a
-                className="btn btn--primary"
-                href={fleche.openrunner}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Icon name="map" size={16} /> Ouvrir le tracé OpenRunner
-              </a>
-              <a className="btn btn--secondary" href={fleche.pdf} target="_blank" rel="noreferrer">
-                <Icon name="file-text" size={16} /> Feuille de route PDF
-              </a>
-              <a
-                className="link planif__xls"
-                href="./assets/Calculateur-fleches-v2.3.xlsx"
-                download
-              >
-                <Icon name="download" size={14} /> Classeur Excel (v2.3)
-              </a>
+              {/* -------------------------------------------- parcours */}
+              <ul className="pl-facts">
+                <li>
+                  <Icon name="ruler" size={15} />
+                  <span>Distance</span>
+                  <b>{fmt(fleche.km)} km</b>
+                </li>
+                <li>
+                  <Icon name="mountain" size={15} />
+                  <span>Dénivelé</span>
+                  <b>{fmt(fleche.dplus)} m</b>
+                </li>
+                <li>
+                  <Icon name="flag" size={15} />
+                  <span>Départ décalé</span>
+                  <b>
+                    {fleche.depart.commune} · {fmt(fleche.depart.km)} km
+                  </b>
+                </li>
+                <li>
+                  <Icon name="users" size={15} />
+                  <span>Déjà homologuées</span>
+                  <b>{fmt(fleche.stats.total)}</b>
+                </li>
+              </ul>
+
+              <div className="pl-actions">
+                <a className="btn btn--primary" href={fleche.openrunner} target="_blank" rel="noreferrer">
+                  <Icon name="route" size={16} /> Tracé OpenRunner
+                </a>
+                <a className="btn btn--secondary" href={fleche.pdf} target="_blank" rel="noreferrer">
+                  <Icon name="file-text" size={16} /> Feuille de route PDF
+                </a>
+                <a className="link pl-xls" href="./assets/Calculateur-fleches-v2.3.xlsx" download>
+                  <Icon name="download" size={14} /> Classeur Excel v2.3
+                </a>
+              </div>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </>
   )

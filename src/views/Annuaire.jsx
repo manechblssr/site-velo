@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Fiche from '../components/Fiche.jsx'
 import Badge from '../components/Badge.jsx'
+import Icon from '../components/Icon.jsx'
 import { makeT } from '../lib/i18n.js'
 import { fmt, norm, downloadCSV, TRANCHES } from '../lib/data.js'
 import { useRoute } from '../lib/store.jsx'
@@ -190,7 +191,7 @@ export default function Annuaire({ lang, data, routeParam }) {
         {/* --- filtres principaux : recherche + Année + Club + Formule ----- */}
         <div className="toolbar toolbar--main" role="search" aria-label="Filtres de l'annuaire">
           <div className="toolbar__field toolbar__field--wide">
-            <label htmlFor="an-q">{t('f.search')}</label>
+            <label htmlFor="an-q"><Icon name="search" size={13} /> {t('f.search')}</label>
             <input
               id="an-q"
               type="search"
@@ -201,7 +202,7 @@ export default function Annuaire({ lang, data, routeParam }) {
           </div>
 
           <div className="toolbar__field">
-            <label htmlFor="an-annee">{t('f.year')}</label>
+            <label htmlFor="an-annee"><Icon name="calendar" size={13} /> {t('f.year')}</label>
             <select id="an-annee" value={f.annee} onChange={(e) => set('annee', e.target.value)}>
               <option value="">{t('f.all')}</option>
               {options.annees.map((y) => (
@@ -213,7 +214,7 @@ export default function Annuaire({ lang, data, routeParam }) {
           </div>
 
           <div className="toolbar__field">
-            <label htmlFor="an-club">{t('f.club')}</label>
+            <label htmlFor="an-club"><Icon name="building" size={13} /> {t('f.club')}</label>
             <input
               id="an-club"
               list="liste-clubs"
@@ -229,7 +230,7 @@ export default function Annuaire({ lang, data, routeParam }) {
           </div>
 
           <div className="toolbar__field">
-            <label htmlFor="an-formule">{t('f.formule')}</label>
+            <label htmlFor="an-formule"><Icon name="medal" size={13} /> {t('f.formule')}</label>
             <select
               id="an-formule"
               value={f.formule}
@@ -249,7 +250,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             aria-controls="an-avances"
             onClick={() => setAvances((v) => !v)}
           >
-            {t('f.advanced')}
+            <Icon name="filter" size={15} /> {t('f.advanced')}
             {nbAvances > 0 && <span className="pill">{nbAvances}</span>}
           </button>
         </div>
@@ -263,7 +264,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             aria-label={t('f.advanced')}
           >
             <div className="toolbar__field">
-              <label htmlFor="an-fede">{t('f.fede')}</label>
+              <label htmlFor="an-fede"><Icon name="landmark" size={13} /> {t('f.fede')}</label>
               <select id="an-fede" value={f.fede} onChange={(e) => set('fede', e.target.value)}>
                 <option value="">{t('f.all')}</option>
                 {options.fedes.map((x) => (
@@ -276,7 +277,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             </div>
 
             <div className="toolbar__field">
-              <label htmlFor="an-fleche">{t('f.fleche')}</label>
+              <label htmlFor="an-fleche"><Icon name="route" size={13} /> {t('f.fleche')}</label>
               <select id="an-fleche" value={f.fleche} onChange={(e) => set('fleche', e.target.value)}>
                 <option value="">{t('f.all')}</option>
                 {fleches.map((x) => (
@@ -288,7 +289,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             </div>
 
             <div className="toolbar__field">
-              <label htmlFor="an-sexe">{t('f.sexe')}</label>
+              <label htmlFor="an-sexe"><Icon name="user" size={13} /> {t('f.sexe')}</label>
               <select id="an-sexe" value={f.sexe} onChange={(e) => set('sexe', e.target.value)}>
                 <option value="">{t('f.all')}</option>
                 <option value="H">Hommes</option>
@@ -297,7 +298,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             </div>
 
             <div className="toolbar__field">
-              <label htmlFor="an-tranche">{t('f.age')}</label>
+              <label htmlFor="an-tranche"><Icon name="users" size={13} /> {t('f.age')}</label>
               <select
                 id="an-tranche"
                 value={f.tranche}
@@ -313,7 +314,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             </div>
 
             <div className="toolbar__field">
-              <label htmlFor="an-dept">{t('f.dept')}</label>
+              <label htmlFor="an-dept"><Icon name="map-pin" size={13} /> {t('f.dept')}</label>
               <select id="an-dept" value={f.dept} onChange={(e) => set('dept', e.target.value)}>
                 <option value="">{t('f.all')}</option>
                 {options.depts.map((x) => (
@@ -325,7 +326,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             </div>
 
             <div className="toolbar__field">
-              <label htmlFor="an-pays">{t('f.pays')}</label>
+              <label htmlFor="an-pays"><Icon name="globe" size={13} /> {t('f.pays')}</label>
               <select id="an-pays" value={f.pays} onChange={(e) => set('pays', e.target.value)}>
                 <option value="">{t('f.all')}</option>
                 {options.pays.map((x) => (
@@ -337,7 +338,7 @@ export default function Annuaire({ lang, data, routeParam }) {
             </div>
 
             <div className="toolbar__field toolbar__field--sort">
-              <label htmlFor="an-tri">{t('f.sort')}</label>
+              <label htmlFor="an-tri"><Icon name="list" size={13} /> {t('f.sort')}</label>
               <select id="an-tri" value={tri} onChange={(e) => setTri(e.target.value)}>
                 <option value="nb">Nombre de flèches</option>
                 <option value="distinctes">Flèches distinctes</option>
@@ -392,7 +393,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               {t('f.manager')}
             </label>
             <button type="button" className="btn btn--secondary btn--sm" onClick={exporter}>
-              {t('f.export')}
+              <Icon name="download" size={15} /> {t('f.export')}
             </button>
           </span>
         </div>
@@ -465,7 +466,7 @@ export default function Annuaire({ lang, data, routeParam }) {
                         aria-label={`${t('t.view')} — ${p.nom} ${p.prenom}`}
                         onClick={() => setOuvert(p)}
                       >
-                        {t('t.viewShort')}
+                        <Icon name="user" size={15} /> {t('t.viewShort')}
                       </button>
                     </td>
                   </tr>
@@ -483,7 +484,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               disabled={page === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              ← Précédent
+              <Icon name="chevron-left" size={15} /> Précédent
             </button>
             <span className="muted">
               Page {page} / {pages}
@@ -494,7 +495,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               disabled={page === pages}
               onClick={() => setPage((p) => Math.min(pages, p + 1))}
             >
-              Suivant →
+              Suivant <Icon name="chevron-right" size={15} />
             </button>
           </nav>
         )}

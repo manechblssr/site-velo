@@ -9,6 +9,7 @@ dist/
 
 # Outils locaux / skills des agents
 .opencode/
+.claude/skills/
 .impeccable/
 .taste-skill/
 _skills/

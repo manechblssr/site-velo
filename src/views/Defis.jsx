@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import Badge from '../components/Badge.jsx'
+import Icon from '../components/Icon.jsx'
 import { makeT } from '../lib/i18n.js'
 import { fmt, fmtDate, norm, downloadCSV } from '../lib/data.js'
 
 const ONGLETS = [
-  ['formules', 'Par formule'],
-  ['pionnier', 'Le pionnier'],
-  ['complete', 'La Complète'],
-  ['express', 'La Complète express'],
-  ['combiné', 'Le combiné'],
+  ['formules', 'Par formule', 'medal'],
+  ['pionnier', 'Le pionnier', 'flag'],
+  ['complete', 'La Complète', 'trophy'],
+  ['express', 'La Complète express', 'zap'],
+  ['combiné', 'Le combiné', 'layers'],
 ]
 
 const NOMF = { O: 'Or', A: 'Argent', B: 'Bronze' }
@@ -33,7 +34,7 @@ export default function Defis({ lang, data }) {
         </div>
 
         <div className="tabs-app" role="tablist" aria-label="Défis et formules">
-          {ONGLETS.map(([id, label]) => (
+          {ONGLETS.map(([id, label, ico]) => (
             <button
               key={id}
               type="button"
@@ -44,7 +45,7 @@ export default function Defis({ lang, data }) {
               className="tab-app"
               onClick={() => setOnglet(id)}
             >
-              {label}
+              <Icon name={ico} size={15} /> {label}
             </button>
           ))}
         </div>
@@ -110,7 +111,7 @@ function ParFormule({ homologations, fleches, lang }) {
     <>
       <div className="toolbar" role="group" aria-label="Filtres de formule">
         <div className="toolbar__field">
-          <label htmlFor="pf-formule">Formule</label>
+          <label htmlFor="pf-formule"><Icon name="medal" size={13} /> Formule</label>
           <select id="pf-formule" value={formule} onChange={(e) => setFormule(e.target.value)}>
             <option value="O">Or</option>
             <option value="A">Argent</option>
@@ -118,7 +119,7 @@ function ParFormule({ homologations, fleches, lang }) {
           </select>
         </div>
         <div className="toolbar__field">
-          <label htmlFor="pf-fleche">{t('f.fleche')}</label>
+          <label htmlFor="pf-fleche"><Icon name="route" size={13} /> {t('f.fleche')}</label>
           <select id="pf-fleche" value={fleche} onChange={(e) => setFleche(e.target.value)}>
             <option value="">{t('f.all')}</option>
             {fleches.map((f) => (
@@ -129,7 +130,7 @@ function ParFormule({ homologations, fleches, lang }) {
           </select>
         </div>
         <div className="toolbar__field toolbar__field--wide">
-          <label htmlFor="pf-q">Rechercher</label>
+          <label htmlFor="pf-q"><Icon name="search" size={13} /> Rechercher</label>
           <input
             id="pf-q"
             type="search"
@@ -143,7 +144,7 @@ function ParFormule({ homologations, fleches, lang }) {
             <b>{fmt(lignes.length)}</b> homologations
           </span>
           <button type="button" className="btn btn--secondary btn--sm" onClick={exportCSV}>
-            {t('f.export')}
+            <Icon name="download" size={15} /> {t('f.export')}
           </button>
         </div>
       </div>
@@ -188,7 +189,7 @@ function ParFormule({ homologations, fleches, lang }) {
             disabled={pageSure === 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
-            ← Précédent
+            <Icon name="chevron-left" size={15} /> Précédent
           </button>
           <span className="muted">
             Page {pageSure} / {pages} — {fmt(lignes.length)} homologations au total
@@ -199,7 +200,7 @@ function ParFormule({ homologations, fleches, lang }) {
             disabled={pageSure === pages}
             onClick={() => setPage((p) => Math.min(pages, p + 1))}
           >
-            Suivant →
+            Suivant <Icon name="chevron-right" size={15} />
           </button>
         </nav>
       )}
@@ -368,7 +369,7 @@ function Complete({ defis, stats, participants, lang }) {
     <>
       <div className="toolbar" role="group" aria-label="Filtres de La Complète">
         <div className="toolbar__field">
-          <label htmlFor="cp-sexe">{t('f.sexe')}</label>
+          <label htmlFor="cp-sexe"><Icon name="user" size={13} /> {t('f.sexe')}</label>
           <select id="cp-sexe" value={sexe} onChange={(e) => setSexe(e.target.value)}>
             <option value="">{t('f.all')}</option>
             <option value="H">Hommes</option>
@@ -376,7 +377,7 @@ function Complete({ defis, stats, participants, lang }) {
           </select>
         </div>
         <div className="toolbar__field toolbar__field--wide">
-          <label htmlFor="cp-q">Rechercher</label>
+          <label htmlFor="cp-q"><Icon name="search" size={13} /> Rechercher</label>
           <input
             id="cp-q"
             type="search"
@@ -390,7 +391,7 @@ function Complete({ defis, stats, participants, lang }) {
             <b>{fmt(liste.length)}</b> lauréats
           </span>
           <button type="button" className="btn btn--secondary btn--sm" onClick={exportCSV}>
-            {t('f.export')}
+            <Icon name="download" size={15} /> {t('f.export')}
           </button>
         </div>
       </div>

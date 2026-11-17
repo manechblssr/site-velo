@@ -1,10 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import Icon from '../components/Icon.jsx'
 import { useData, useRoute } from '../lib/store.jsx'
 import { fmt, fmtKm, norm, downloadCSV } from '../lib/data.js'
 
 /* ------------------------------------------------------------------ */
 /*  Vue « Clubs & Statistiques » : classement, fiche club, saison       */
 /* ------------------------------------------------------------------ */
+
+/* 455 clubs sur une seule page donnerait ~27 000 px de défilement : le
+   classement se lit par pages, comme l'annuaire. */
+const PAR_PAGE = 25
 
 const COLS = [
   { key: 'km', label: 'Km' },
@@ -20,6 +25,7 @@ export default function Clubs() {
   const [, go] = useRoute()
   const [q, setQ] = useState('')
   const [sortBy, setSortBy] = useState('km')
+  const [page, setPage] = useState(1)
   const [ouvert, setOuvert] = useState(null) // nom du club affiché en fiche
 
   const clubs = data.clubs ?? []
@@ -47,6 +53,12 @@ export default function Clubs() {
     out.sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0) || a.nom.localeCompare(b.nom, 'fr'))
     return out
   }, [clubs, q, sortBy])
+
+  useEffect(() => setPage(1), [q, sortBy])
+
+  const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
+  const pageSure = Math.min(page, pages)
+  const visible = liste.slice((pageSure - 1) * PAR_PAGE, pageSure * PAR_PAGE)
 
   const records = useMemo(() => {
     const top = (key) =>
@@ -93,7 +105,7 @@ export default function Clubs() {
 
         <div className="toolbar" role="search" aria-label="Filtres du classement des clubs">
           <div className="toolbar__field toolbar__field--wide">
-            <label htmlFor="cl-q">Rechercher un club</label>
+            <label htmlFor="cl-q"><Icon name="search" size={13} /> Rechercher un club</label>
             <input
               id="cl-q"
               type="search"
@@ -103,7 +115,7 @@ export default function Clubs() {
             />
           </div>
           <div className="toolbar__field">
-            <label htmlFor="cl-tri">Trier par</label>
+            <label htmlFor="cl-tri"><Icon name="list" size={13} /> Trier par</label>
             <select id="cl-tri" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               {COLS.map((c) => (
                 <option key={c.key} value={c.key}>
@@ -117,7 +129,7 @@ export default function Clubs() {
               <b>{fmt(liste.length)}</b> clubs
             </span>
             <button type="button" className="btn btn--secondary btn--sm" onClick={exporter}>
-              Exporter en CSV
+              <Icon name="download" size={15} /> Exporter en CSV
             </button>
           </div>
         </div>
@@ -160,9 +172,9 @@ export default function Clubs() {
               </tr>
             </thead>
             <tbody>
-              {liste.map((c, i) => (
+              {visible.map((c, i) => (
                 <tr key={`${c.nom}-${c.code}`}>
-                  <td className="num">{i + 1}</td>
+                  <td className="num">{(pageSure - 1) * PAR_PAGE + i + 1}</td>
                   <th scope="row">
                     <button
                       type="button"
@@ -192,6 +204,30 @@ export default function Clubs() {
             </tbody>
           </table>
         </div>
+
+        {pages > 1 && (
+          <nav className="pager" aria-label="Pagination du classement des clubs">
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={pageSure === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <Icon name="chevron-left" size={15} /> Précédent
+            </button>
+            <span className="muted">
+              Page {pageSure} / {pages}
+            </span>
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              disabled={pageSure === pages}
+              onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            >
+              Suivant <Icon name="chevron-right" size={15} />
+            </button>
+          </nav>
+        )}
 
         {club && (
           <FicheClub club={club} parClub={parClub} onClose={() => setOuvert(null)} onGo={go} />

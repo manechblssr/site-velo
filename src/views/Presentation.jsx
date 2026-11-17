@@ -1,5 +1,7 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from '../components/Sidebar.jsx'
+import Icon from '../components/Icon.jsx'
+import Planificateur from '../components/Planificateur.jsx'
 import { makeT } from '../lib/i18n.js'
 import { fmt, fmtDate } from '../lib/data.js'
 
@@ -8,22 +10,27 @@ import { fmt, fmtDate } from '../lib/data.js'
 
 const ENCARTS = [
   {
+    i: 'map',
     q: 'C\'est quoi ?',
     r: '20 parcours 100 % route, au départ ou à l\'arrivée de Paris.',
   },
   {
+    i: 'calendar',
     q: 'Quand ?',
     r: 'Des randonnées permanentes : vous partez quand vous voulez, la flèche est ouverte toute l\'année.',
   },
   {
+    i: 'timer',
     q: 'Quel délai ?',
     r: 'Trois formules pour valider votre flèche : Or, Argent ou Bronze.',
   },
   {
+    i: 'euro',
     q: 'C\'est combien ?',
     r: 'Un tarif tout doux, et gratuit pour les mineurs.',
   },
   {
+    i: 'mail',
     q: 'Où s\'inscrire ?',
     r: 'Uniquement en ligne sur myaccount.audax-club-parisien.com.',
   },
@@ -38,24 +45,28 @@ const TARIFS = [
 
 const DEFS_CARDS = [
   {
+    i: 'trophy',
     titre: 'La Complète',
     texte:
       'Valider les 20 Flèches de France. Depuis 1997, une centaine de cyclotouristes y sont parvenus sur le cycle complet.',
     vue: 'defis',
   },
   {
+    i: 'timer',
     titre: 'La Complète express',
     texte:
       'Les 20 Flèches en une seule année, soit près de 11 200 km à réaliser en douze mois.',
     vue: 'defis',
   },
   {
+    i: 'medal',
     titre: 'Le combiné',
     texte:
       'Couplage des Flèches de France avec les Relais de France : deux défis, un même carnet.',
     vue: 'defis',
   },
   {
+    i: 'flag',
     titre: 'Le pionnier',
     texte:
       'Être le premier à homologuer une formule sur une flèche. Certaines combinaisons restent vierges depuis 1997.',
@@ -66,11 +77,49 @@ const DEFS_CARDS = [
 export default function Presentation({ lang, data }) {
   const t = makeT(lang)
   const { fleches, meta, defis, homologations } = data
+  const [planif, setPlanif] = useState(false)
+  const cue = useRef(null)
 
   const pionnier = useMemo(
     () => homologations.filter((h) => h.annee >= 1997 && h.annee <= 2025).length,
     [homologations],
   )
+
+  /* Invite à défiler : elle s'efface en fondu au fil du défilement (320 px
+     suffisent) et redevient pleine quand on remonte. Opacité pilotée en
+     rAF sur le nœud lui-même : aucun rendu React à chaque frame. */
+  useEffect(() => {
+    const el = cue.current
+    if (!el) return
+    let raf = 0
+    const maj = () => {
+      raf = 0
+      const y = window.scrollY
+      const o = Math.min(1, Math.max(0, 1 - y / 320))
+      el.style.opacity = o.toFixed(3)
+      el.style.visibility = o <= 0.02 ? 'hidden' : 'visible'
+      el.style.pointerEvents = o < 0.15 ? 'none' : ''
+    }
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(maj)
+    }
+    maj()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  /* Invite à défiler : descente douce vers le premier bloc, sans changer
+     de hash (l'ancre resterait dans la route) et sans animation pour qui
+     a demandé un système réduit. */
+  const descendre = () => {
+    const cible = document.getElementById('h-encarts')
+    if (!cible) return
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    cible.scrollIntoView({ behavior: reduit ? 'auto' : 'smooth', block: 'start' })
+  }
 
   const notes = [
     { date: '2026', texte: `${meta.homologations.toLocaleString('fr-FR')} homologations dans la base, ${meta.participants.toLocaleString('fr-FR')} fléchards.` },
@@ -128,6 +177,24 @@ export default function Presentation({ lang, data }) {
             />
           </div>
         </div>
+
+        {/* invitation à défiler dans le vide sous le hero */}
+        <button
+          type="button"
+          className="hero-scroll"
+          onClick={descendre}
+          ref={cue}
+          aria-label="Faire défiler vers la suite de la page"
+        >
+          <span className="hero-scroll__mouse" aria-hidden="true">
+            <i />
+          </span>
+          <span className="hero-scroll__txt">Défilez pour découvrir</span>
+          <span className="hero-scroll__chev" aria-hidden="true">
+            <Icon name="chevron-down" size={18} strokeWidth={2.5} />
+            <Icon name="chevron-down" size={18} strokeWidth={2.5} />
+          </span>
+        </button>
       </section>
 
       {/* ------------------------------------------------------- corps */}
@@ -140,12 +207,17 @@ export default function Presentation({ lang, data }) {
                 En bref <span className="muted">ce qu'il faut savoir avant de partir</span>
               </h2>
             </div>
-            <div className="encarts">
+            <div className="en-bref">
               {ENCARTS.map((e) => (
-                <article className="encart lift" key={e.q}>
-                  <h3>{e.q}</h3>
-                  <p>{e.r}</p>
-                </article>
+                <div className="en-bref__item" key={e.q}>
+                  <span className="en-bref__ico" aria-hidden="true">
+                    <Icon name={e.i} size={17} />
+                  </span>
+                  <div>
+                    <h3>{e.q}</h3>
+                    <p>{e.r}</p>
+                  </div>
+                </div>
               ))}
             </div>
           </section>
@@ -157,6 +229,10 @@ export default function Presentation({ lang, data }) {
                 Les 20 Flèches <span className="muted">référentiel officiel 2026</span>
               </h2>
             </div>
+            <p className="ref-astuce">
+              <Icon name="map" size={15} /> Cliquez sur une flèche pour l’ouvrir sur la carte avec
+              sa fiche détaillée.
+            </p>
             <p className="note">
               Les distances et dénivelés ci-dessous font foi pour l'édition 2026. Les valeurs
               historiques enregistrées sur chaque homologation restent consultables sur la fiche
@@ -186,16 +262,27 @@ export default function Presentation({ lang, data }) {
                 <tbody>
                   {fleches.map((f) => {
                     const ecart = f.hist?.km && f.hist.km !== f.km
+                    /* toute la ligne mène à la carte avec la fiche de la flèche
+                       ouverte ; les liens de ressources gardent leur action */
+                    const versCarte = (e) => {
+                      if (e.target.closest('a')) return
+                      window.location.hash = `#/carte/${f.id}`
+                    }
                     return (
-                      <tr key={f.id}>
+                      <tr key={f.id} onClick={versCarte}>
                         <th scope="row">
                           <a
-                            href="#/carte"
+                            className="ref-nom"
+                            href={`#/carte/${f.id}`}
+                            title={`Voir ${f.nom} sur la carte`}
                             onClick={(e) => {
                               e.preventDefault()
                               window.location.hash = `#/carte/${f.id}`
                             }}
                           >
+                            <span className="ref-nom__ico" aria-hidden="true">
+                              <Icon name="map-pin" size={14} />
+                            </span>
                             {f.nom}
                           </a>
                         </th>
@@ -218,13 +305,28 @@ export default function Presentation({ lang, data }) {
                           {f.depart.commune}
                           <span className="hist"> {fmt(f.depart.km)} km</span>
                         </td>
-                        <td className="res">
-                          <a href={f.openrunner} target="_blank" rel="noreferrer">
-                            OpenRunner ↗
+                        <td className="res res--ico">
+                          <a
+                            href={f.openrunner}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Tracé OpenRunner"
+                            aria-label={`Tracé OpenRunner de ${f.nom}`}
+                          >
+                            <Icon name="route" size={15} />
                           </a>
-                          <a href={f.pdf} target="_blank" rel="noreferrer">
-                            Feuille de route ↗
+                          <a
+                            href={f.pdf}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Feuille de route (PDF)"
+                            aria-label={`Feuille de route de ${f.nom} (PDF)`}
+                          >
+                            <Icon name="file-text" size={15} />
                           </a>
+                          <span className="ref-go" aria-hidden="true">
+                            <Icon name="chevron-right" size={16} />
+                          </span>
                         </td>
                       </tr>
                     )
@@ -259,56 +361,65 @@ export default function Presentation({ lang, data }) {
               <div className="encart encart--action">
                 <h3>Planifiez votre Flèche</h3>
                 <p>
-                  Le classeur officiel calcule vos délais, vos étapes et votre carte de route à
-                  partir de la formule choisie.
+                  Choisissez une flèche et une formule : délais, allure minimale et repères
+                  horaires s'affichent directement sur cette page, sans classeur.
                 </p>
-                <a className="btn btn--secondary" href="./assets/Calculateur-fleches-v2.3.xlsx" download>
-                  Télécharger le Calculateur v2.3
-                </a>
+                <div className="btn-row">
+                  <button type="button" className="btn btn--primary" onClick={() => setPlanif(true)}>
+                    <Icon name="calculator" size={16} /> Ouvrir le planificateur
+                  </button>
+                  <a
+                    className="link"
+                    href="./assets/Calculateur-fleches-v2.3.xlsx"
+                    download
+                  >
+                    <Icon name="download" size={14} /> Classeur Excel v2.3
+                  </a>
+                </div>
               </div>
             </div>
           </section>
 
           {/* défis */}
           <section className="section section--dense" aria-labelledby="h-defis">
-            <div className="section-head section-head--row">
+            <div className="section-head">
               <h2 id="h-defis" className="t-h2">
                 Les défis <span className="muted">au-delà des 20 flèches</span>
               </h2>
-              <a
-                className="link"
-                href="#/defis"
-                onClick={(e) => {
-                  e.preventDefault()
-                  window.location.hash = '#/defis'
-                }}
-              >
-                Ouvrir l'explorateur des défis
-              </a>
             </div>
-            <div className="defi-cards">
-              {DEFS_CARDS.map((d) => (
+            <div className="defi-panel">
+              <ul className="defi-list">
+                {DEFS_CARDS.map((d) => (
+                  <li key={d.titre}>
+                    <span className="defi-list__ico" aria-hidden="true">
+                      <Icon name={d.i} size={17} />
+                    </span>
+                    <div>
+                      <b>{d.titre}</b>
+                      <p>{d.texte}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <div className="defi-panel__cta">
                 <a
-                  key={d.titre}
-                  className="defi-card lift"
-                  href={`#/${d.vue}`}
+                  className="btn btn--primary"
+                  href="#/defis"
                   onClick={(e) => {
                     e.preventDefault()
-                    window.location.hash = `#/${d.vue}`
+                    window.location.hash = '#/defis'
                   }}
                 >
-                  <h3>{d.titre}</h3>
-                  <p>{d.texte}</p>
-                  <span className="defi-card__go">Découvrir →</span>
+                  <Icon name="trophy" size={16} /> Ouvrir l'explorateur des défis
                 </a>
-              ))}
+                <p className="t-small muted defi-figures">
+                  {pionnier.toLocaleString('fr-FR')} flèches homologuées entre {meta.annees[0]} et
+                  2025 dans la base · {defis.express.length} Complètes express détectées ·{' '}
+                  {defis.vierges.filter((v) => v.vierge1997_2025).length} formules encore vierges
+                  sur la période.
+                </p>
+              </div>
             </div>
-            <p className="t-small muted defi-figures">
-              {pionnier.toLocaleString('fr-FR')} flèches homologuées entre {meta.annees[0]} et
-              2025 dans la base · {defis.express.length} Complètes express détectées ·{' '}
-              {defis.vierges.filter((v) => v.vierge1997_2025).length} formules encore vierges
-              sur la période.
-            </p>
           </section>
 
           {/* en savoir plus */}
@@ -405,6 +516,8 @@ export default function Presentation({ lang, data }) {
 
         <Sidebar lang={lang} notes={notes} />
       </div>
+
+      {planif && <Planificateur fleches={fleches} onClose={() => setPlanif(false)} />}
     </>
   )
 }

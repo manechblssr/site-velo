@@ -50,14 +50,25 @@ export function useRoute() {
   const [route, setRoute] = useState(parseHash)
 
   useEffect(() => {
-    const onHash = () => setRoute(parseHash())
+    const onHash = () => {
+      /* Seules les routes (#/vue) changent de vue. Une ancre interne
+         (#top, lien d'évitement) doit laisser la vue intacte : sinon le
+         lien « Aller au contenu » ramenait l'utilisateur sur la page
+         d'accueil depuis n'importe quelle autre vue. */
+      if (!window.location.hash.startsWith('#/')) return
+      setRoute(parseHash())
+      /* Toute navigation remonte en haut de page, y compris les liens qui
+         assignent window.location.hash directement (carte, annuaire, défis
+         depuis la présentation) sans passer par go(). */
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
   const go = (view, param = '') => {
     window.location.hash = `#/${view}${param ? `/${param}` : ''}`
-    // remonte en haut sauf si l'on clique une ancre interne
+    // même vue récliquée : pas de hashchange, on remonte quand même
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
 

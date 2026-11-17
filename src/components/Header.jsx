@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRoute } from '../lib/store.jsx'
 import { makeT, LANGS } from '../lib/i18n.js'
+import Icon from './Icon.jsx'
 
 /** Lien externe vers la page d'origine du club (contenu du site hôte). */
 const LIENS_ACP = [
@@ -13,11 +14,11 @@ const LIENS_ACP = [
 ]
 
 const VUES = [
-  ['presentation', 'nav.presentation'],
-  ['carte', 'nav.carte'],
-  ['annuaire', 'nav.annuaire'],
-  ['defis', 'nav.defis'],
-  ['clubs', 'nav.clubs'],
+  ['presentation', 'nav.presentation', 'book-open'],
+  ['carte', 'nav.carte', 'map'],
+  ['annuaire', 'nav.annuaire', 'users'],
+  ['defis', 'nav.defis', 'trophy'],
+  ['clubs', 'nav.clubs', 'bar-chart'],
 ]
 
 export default function Header({ lang, setLang, onSearch }) {
@@ -53,7 +54,17 @@ export default function Header({ lang, setLang, onSearch }) {
     <header className="nav" style={{ '--nav': 'var(--nav-h)' }}>
       {/* une seule barre : liaison d'évitement, rangée hôte, rangée rubrique */}
       <div className="acp-bar">
-        <a className="skip-link" href="#top">
+        <a
+          className="skip-link"
+          href="#top"
+          onClick={(e) => {
+            // on ne touche pas au hash : il porte la route (#/vue)
+            e.preventDefault()
+            const cible = document.getElementById('top')
+            cible?.focus?.()
+            cible?.scrollIntoView({ block: 'start' })
+          }}
+        >
           {t('nav.skip')}
         </a>
 
@@ -98,7 +109,7 @@ export default function Header({ lang, setLang, onSearch }) {
         </a>
 
         <nav aria-label="Sections des Flèches de France" className="acp-tabs">
-          {VUES.map(([view, key]) => (
+          {VUES.map(([view, key, ico]) => (
             <a
               key={view}
               href={`#/${view}`}
@@ -108,16 +119,24 @@ export default function Header({ lang, setLang, onSearch }) {
                 go(view)
               }}
             >
+              <Icon name={ico} size={15} className="acp-tabs__ico" />
               {t(key)}
             </a>
           ))}
         </nav>
 
         <form className="acp-search" role="search" onSubmit={submit}>
-          <label className="acp-search__label" htmlFor="q-header">
+          <label className="sr-only" htmlFor="q-header">
             {t('nav.search')}
           </label>
-          <input id="q-header" name="q" type="search" placeholder={t('nav.search')} />
+          <Icon name="search" size={16} className="acp-search__ico" />
+          <input
+            id="q-header"
+            name="q"
+            type="search"
+            placeholder="Rechercher…"
+            autoComplete="off"
+          />
         </form>
 
         <button
@@ -136,7 +155,7 @@ export default function Header({ lang, setLang, onSearch }) {
       {open && (
         <div className="nav-sheet" id="nav-sheet" ref={sheetRef}>
           <nav aria-label="Sections" className="wrap nav-sheet__list">
-            {VUES.map(([view, key]) => (
+            {VUES.map(([view, key, ico]) => (
               <a
                 key={view}
                 href={`#/${view}`}
@@ -146,6 +165,7 @@ export default function Header({ lang, setLang, onSearch }) {
                   go(view)
                 }}
               >
+                <Icon name={ico} size={17} />
                 {t(key)}
               </a>
             ))}

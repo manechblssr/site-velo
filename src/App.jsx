@@ -68,7 +68,7 @@ function Shell() {
   return (
     <>
       <Header lang={lang} setLang={setLang} onSearch={onSearch} />
-      <main id="top" key={route.view}>
+      <main id="top" key={route.view} tabIndex={-1}>
         {vues[route.view]}
       </main>
       <Footer lang={lang} meta={meta} />
