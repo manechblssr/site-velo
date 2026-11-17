@@ -86,7 +86,7 @@ function Shell() {
       />
     ),
     annuaire: <Annuaire lang={lang} data={data} routeParam={route.param} />,
-    defis: <Defis lang={lang} data={data} />,
+    defis: <Defis lang={lang} data={data} routeParam={route.param} />,
     clubs: <Clubs lang={lang} data={data} />,
   }
 

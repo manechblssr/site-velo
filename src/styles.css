@@ -335,30 +335,6 @@
   border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
-/* Complète or / argent / bronze */
-.toolbar__metaux { border: 0; margin: 0; padding: 0; min-width: 0; }
-.toolbar__metaux legend { display: flex; align-items: center; gap: 4px; padding: 0; }
-.toolbar__metaux .toolbar__checks { gap: var(--s-3); }
-.check {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  font-size: 14px;
-  cursor: pointer;
-}
-.check input {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--action);
-  cursor: pointer;
-}
-.kpi--metal .kpi__l { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.metal-counts { display: inline-flex; flex-wrap: wrap; gap: 6px; }
-.metal-count { opacity: 0.7; white-space: nowrap; }
-.metal-count.is-full { opacity: 1; font-weight: 600; }
-.empty-metal { display: grid; gap: var(--s-3); }
 .kpi__v {
   display: block;
   font-size: 30px;
@@ -5092,5 +5068,470 @@ main > .hero {
   .cx-histo,
   .cx-histo__an {
     animation: none;
+  }
+}
+
+/* =========================================================================
+   Défis : onglets, introduction, filtres, tableaux lisibles sur mobile
+   ========================================================================= */
+
+.defis-intro {
+  max-width: 72ch;
+  margin: 0 0 var(--s-5);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* libellé de groupe (boutons ou cases), aligné sur les <label> de la barre */
+.toolbar__lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.toolbar__lbl .icon {
+  color: var(--action);
+}
+.toolbar__field--seg {
+  flex: 0 1 auto;
+}
+
+/* Sélecteur Or / Argent / Bronze : trois boutons, un seul actif */
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.seg__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.seg__btn:hover {
+  border-color: var(--ink);
+}
+.seg__btn:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+.seg__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.seg__n {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.seg__btn--O .seg__dot { background: var(--or-ink); }
+.seg__btn--A .seg__dot { background: var(--ag-ink); }
+.seg__btn--B .seg__dot { background: var(--br-ink); }
+.seg__btn--O[aria-checked="true"] { background: var(--or-bg); border-color: var(--or-ink); color: var(--or-ink); font-weight: 600; }
+.seg__btn--A[aria-checked="true"] { background: var(--ag-bg); border-color: var(--ag-ink); color: var(--ag-ink); font-weight: 600; }
+.seg__btn--B[aria-checked="true"] { background: var(--br-bg); border-color: var(--br-ink); color: var(--br-ink); font-weight: 600; }
+.seg__btn[aria-checked="true"] .seg__n { color: inherit; }
+
+/* Cases à cocher Or / Argent / Bronze : même gabarit que les boutons */
+.checks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.toolbar .check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 14px 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  user-select: none;
+}
+.toolbar .check:hover {
+  border-color: var(--ink);
+}
+.toolbar .check input {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  flex: none;
+  cursor: pointer;
+}
+.toolbar .check:focus-within {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+.check__n {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.check--O input { accent-color: var(--or-ink); }
+.check--A input { accent-color: var(--ag-ink); }
+.check--B input { accent-color: var(--br-ink); }
+.toolbar .check--O.is-on { background: var(--or-bg); border-color: var(--or-ink); color: var(--or-ink); }
+.toolbar .check--A.is-on { background: var(--ag-bg); border-color: var(--ag-ink); color: var(--ag-ink); }
+.toolbar .check--B.is-on { background: var(--br-bg); border-color: var(--br-ink); color: var(--br-ink); }
+.check.is-on .check__n { color: inherit; }
+
+/* Barre de résultat : compteur + actions, sous les filtres */
+.resultbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  margin: 0 0 var(--s-3);
+}
+.resultbar__count {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.resultbar__count b {
+  color: var(--ink);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.resultbar__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+/* Chiffres clés de La Complète : une seule rangée */
+.kpis--complete {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: var(--s-5);
+}
+.kpis--complete .kpi--O { background: var(--or-bg); border-color: var(--or-line); }
+.kpis--complete .kpi--A { background: var(--ag-bg); border-color: var(--ag-line); }
+.kpis--complete .kpi--B { background: var(--br-bg); border-color: var(--br-line); }
+.kpis--complete .kpi--O .kpi__l { color: var(--or-ink); }
+.kpis--complete .kpi--A .kpi__l { color: var(--ag-ink); }
+.kpis--complete .kpi--B .kpi__l { color: var(--br-ink); }
+
+/* Compteur x/20 + barre de progression */
+.tally {
+  display: inline-grid;
+  gap: 4px;
+  min-width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+.tally__n {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.tally__n small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.tally.is-zero .tally__n {
+  color: var(--muted);
+  font-weight: 400;
+}
+.tally__bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.tally__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+.tally--O .tally__bar > span { background: var(--or-ink); }
+.tally--A .tally__bar > span { background: var(--ag-ink); }
+.tally--B .tally__bar > span { background: var(--br-ink); }
+.tally--O.is-full .tally__n { color: var(--or-ink); }
+.tally--A.is-full .tally__n { color: var(--ag-ink); }
+.tally--B.is-full .tally__n { color: var(--br-ink); }
+
+/* En-têtes triables */
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.th-sort:hover,
+.th-sort.is-active {
+  color: var(--ink);
+}
+.th-sort:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.th-sort__ico {
+  font-size: 10px;
+  opacity: 0.6;
+}
+.th-sort.is-active .th-sort__ico {
+  opacity: 1;
+  color: var(--action);
+}
+
+/* Cellules de La Complète */
+.cell-rider {
+  font-weight: 600;
+}
+.cell-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.cell-period {
+  white-space: nowrap;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.table-app--complete td,
+.table-app--complete tbody th {
+  vertical-align: middle;
+}
+
+/* Les plus proches d'une Complète encore jamais réalisée */
+.empty-metal {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  margin-bottom: var(--s-5);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.empty-metal p {
+  margin: 0;
+}
+.proches {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 var(--s-5);
+}
+.proches li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 var(--s-3);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.proches__club {
+  grid-column: 1;
+  font-size: 13px;
+}
+.proches .tally {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+/* Matrice des pionniers : chaque colonne de formule garde de l'air */
+.cell-fo {
+  min-width: 200px;
+}
+
+@media (max-width: 1023px) {
+  .kpis--complete {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  /* onglets : une seule ligne qui défile au doigt */
+  .tabs-app--defis {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-app--defis::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs-app--defis .tab-app {
+    flex: none;
+    white-space: nowrap;
+  }
+  .defis-intro {
+    font-size: 15px;
+  }
+  .toolbar__field--seg {
+    flex-basis: 100%;
+  }
+  .seg,
+  .checks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .seg__btn,
+  .toolbar .check {
+    justify-content: center;
+    gap: 6px;
+    padding: 0 6px;
+    font-size: 14px;
+  }
+  .seg__dot {
+    display: none;
+  }
+  .seg__n,
+  .check__n {
+    font-size: 12px;
+  }
+  .kpis--complete {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2);
+  }
+  .kpis--complete .kpi {
+    padding: var(--s-3);
+  }
+  .kpis--complete .kpi--metal:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Tableaux empilés : chaque ligne devient une fiche lisible */
+  .table-scroll:has(.table-app--stack) {
+    overflow: visible;
+    border: 0;
+    background: none;
+  }
+  .table-app--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .table-app--stack,
+  .table-app--stack tbody,
+  .table-app--stack tr {
+    display: block;
+    width: 100%;
+  }
+  .table-app--stack tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px var(--s-3);
+    padding: 12px 14px;
+    margin-bottom: var(--s-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
+  .table-app--stack tbody tr:hover {
+    background: var(--bg);
+  }
+  .table-app--stack tbody th {
+    grid-column: 1 / -1;
+    display: block;
+    padding: 0;
+    border: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  /* chaque valeur sous son libellé, deux par rangée */
+  .table-app--stack td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+  .table-app--stack td.num {
+    text-align: left;
+  }
+  .table-app--stack td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .table-app--stack td.cell-wide {
+    grid-column: 1 / -1;
+  }
+  .table-app--stack .cell-fo {
+    grid-column: 1 / -1;
+    min-width: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .table-app--stack .cell-fo::before {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+  .table-app--stack .cell-fo--O::before { color: var(--or-ink); }
+  .table-app--stack .cell-fo--A::before { color: var(--ag-ink); }
+  .table-app--stack .cell-fo--B::before { color: var(--br-ink); }
+
+  /* La Complète : les trois compteurs côte à côte sur la fiche */
+  .table-app--complete tr {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px var(--s-3);
+  }
+  .table-app--complete td.cell-period {
+    grid-column: span 2;
+  }
+  .table-app--complete td.col-metal {
+    display: grid;
+    gap: 2px;
+  }
+  .table-app--complete td.col-metal::before {
+    font-size: 12px;
+  }
+  .table-app--complete .tally {
+    min-width: 0;
+  }
+  .table-app--complete td .cell-sub {
+    display: inline;
+    margin-left: 6px;
+  }
+  .proches {
+    grid-template-columns: 1fr;
+  }
+  .empty-metal {
+    padding: var(--s-3) var(--s-4);
   }
 }
