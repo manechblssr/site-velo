@@ -71,7 +71,7 @@ export default function Clubs() {
   const enTete = (key, libelle) => {
     const actif = sortBy === key
     return (
-      <th key={key} scope="col" className="num" aria-sort={actif ? (sens > 0 ? 'ascending' : 'descending') : 'none'}>
+      <th key={key} scope="col" className={`num th-click${actif ? ' is-sorted' : ''}`} aria-sort={actif ? (sens > 0 ? 'ascending' : 'descending') : 'none'}>
         <button
           type="button"
           className={`th-sort${actif ? ' is-active' : ''}`}
@@ -145,23 +145,6 @@ export default function Clubs() {
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <div className="toolbar__field">
-            <label htmlFor="cl-tri"><Icon name="list" size={13} /> {L('Trier par', 'Sort by')}</label>
-            <select
-              id="cl-tri"
-              value={sortBy}
-              onChange={(e) => {
-                setSortBy(e.target.value)
-                setSens(-1)
-              }}
-            >
-              {COLS.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {L(c.label, c.en)}
-                </option>
-              ))}
-            </select>
-          </div>
           <div className="toolbar__field toolbar__field--action">
             <span className="toolbar__count">
               <b>{fmt(liste.length)}</b> clubs
@@ -183,8 +166,8 @@ export default function Clubs() {
             </strong>
             {sens > 0 ? L(' (ordre croissant)', ' (ascending)') : ''}
             {L(
-              ' — cliquez sur l’en-tête d’une colonne pour changer le classement, sur un club pour ouvrir sa fiche.',
-              ' — click a column header to change the ranking, a club to open its profile.',
+              ' — cliquez en haut d’une colonne (Km, Flèches, Fléchards…) pour classer selon elle, une seconde fois pour inverser.',
+              ' — click the top of a column (Km, Flèches, Riders…) to rank by it, once more to reverse.',
             )}
           </span>
         </div>
@@ -217,12 +200,11 @@ export default function Clubs() {
                     </button>
                   </th>
                   <td className="muted">{c.code || '—'}</td>
-                  <td className="num">{fmt(c.km)}</td>
-                  <td className="num">{fmt(c.nb)}</td>
-                  <td className="num">{fmt(c.participants)}</td>
-                  <td className="num">{fmt(c.O)}</td>
-                  <td className="num">{fmt(c.A)}</td>
-                  <td className="num">{fmt(c.B)}</td>
+                  {COLS.map((col) => (
+                    <td key={col.key} className={`num${sortBy === col.key ? ' is-sorted' : ''}`}>
+                      {fmt(c[col.key])}
+                    </td>
+                  ))}
                 </tr>
               ))}
               {liste.length === 0 && (

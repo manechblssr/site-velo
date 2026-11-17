@@ -5527,3 +5527,25 @@ main > .hero {
     padding: var(--s-3) var(--s-4);
   }
 }
+
+/* Classement des clubs : tout le haut de colonne est cliquable, la colonne
+   triée est légèrement teintée */
+.table-app thead th.th-click {
+  padding: 0;
+}
+.table-app thead th.th-click .th-sort {
+  width: 100%;
+  justify-content: flex-end;
+  min-height: 46px;
+  padding: 12px 16px;
+}
+.table-app thead th.th-click:hover {
+  background: color-mix(in oklab, var(--action) 8%, var(--bg));
+}
+.table-app thead th.is-sorted,
+.table-app td.is-sorted {
+  background: color-mix(in oklab, var(--action) 6%, transparent);
+}
+.table-app td.is-sorted {
+  font-weight: 600;
+}
