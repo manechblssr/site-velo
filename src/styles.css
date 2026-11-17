@@ -3227,13 +3227,48 @@ main > .hero {
 .fl-popup .leaflet-popup-content-wrapper {
   border-radius: 16px;
   box-shadow: 0 24px 48px -28px rgb(14 19 25 / 0.75);
-  animation: pop-in 220ms var(--ease);
+  transform-origin: 50% 100%;
+  animation: pop-in 380ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.fl-popup .leaflet-popup-tip-container {
+  animation: pop-tip 260ms var(--ease) both;
 }
 @keyframes pop-in {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.98);
+    transform: translateY(14px) scale(0.86);
   }
+}
+@keyframes pop-tip {
+  from {
+    opacity: 0;
+  }
+}
+/* le contenu de la fiche se dévoile ligne par ligne */
+.fl-popup .pop > * {
+  animation: pop-ligne 340ms var(--ease) backwards;
+}
+.fl-popup .pop > :nth-child(1) { animation-delay: 80ms; }
+.fl-popup .pop > :nth-child(2) { animation-delay: 130ms; }
+.fl-popup .pop > :nth-child(3) { animation-delay: 180ms; }
+.fl-popup .pop > :nth-child(4) { animation-delay: 230ms; }
+.fl-popup .pop > :nth-child(5) { animation-delay: 280ms; }
+.fl-popup .pop > :nth-child(6) { animation-delay: 330ms; }
+.fl-popup .pop > :nth-child(7) { animation-delay: 380ms; }
+.fl-popup .pop > :nth-child(8) { animation-delay: 430ms; }
+.fl-popup .pop > :nth-child(n + 9) { animation-delay: 480ms; }
+@keyframes pop-ligne {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* la flèche choisie se retrace de Paris vers sa ville pendant le zoom */
+.fl-redraw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: fl-draw 1.15s cubic-bezier(0.45, 0, 0.2, 1) forwards;
 }
 .fl-popup .pop__ico {
   color: #fff;
@@ -3331,7 +3366,8 @@ main > .hero {
   .fl-paris__pulse,
   .cx-item__bar i,
   .pop__dist span,
-  .fl-popup .leaflet-popup-content-wrapper {
+  .fl-popup:not([data-m-loop]) .leaflet-popup-content-wrapper,
+  .fl-popup:not([data-m-loop]) .pop > * {
     animation: none;
   }
 }

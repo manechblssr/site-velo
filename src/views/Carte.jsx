@@ -284,6 +284,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       /* préférence non mémorisée */
     }
     mapEl.current?.classList.toggle('is-calme', !animer)
+    animerRef.current = animer
   }, [animer])
 
   const stageRef = useRef(null)
@@ -295,7 +296,10 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   const handlers = useRef({})
   const zoomDeparts = useRef(null)
   const refParis = useRef(null)
+  const animerRef = useRef(true)
+  const vol = useRef({ timer: 0, secours: 0 })
   handlers.current = {
+    ouvrir: (id) => zoomerSur(id),
     laureats: onOpenFleche,
     planifier: (id) => setPlanif(id),
     survol: (id) => setSurvol(id),
@@ -378,11 +382,80 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
 
   /* --- actions ---------------------------------------------------------- */
   function choisirFleche(f) {
+    if (f.coords) zoomerSur(f.id)
+  }
+
+  /* Clic sur une flèche (arc, repère, liste ou lien) :
+     1. la flèche passe en avant et se retrace de Paris vers la ville ;
+     2. la caméra vole pour cadrer l'arc entier ;
+     3. une fois posée, la fiche s'ouvre sur la ville d'arrivée.
+     Interrupteur « Animation » coupé : cadrage et fiche immédiats. */
+  function zoomerSur(id) {
     const map = mapRef.current
-    if (!map || !f.coords) return
+    const r = refs.current.get(id)
+    if (!map || !r?.pts) return
+    const anim = animerRef.current
+    window.clearTimeout(vol.current.timer)
+    window.clearTimeout(vol.current.secours)
+    map.off('moveend', vol.current.fin)
     map.closePopup()
-    map.flyTo(f.coords, Math.max(map.getZoom(), 7), { animate: !reduit(), duration: 0.7 })
-    window.setTimeout(() => refs.current.get(f.id)?.pin?.openPopup(), reduit() ? 50 : 760)
+    setActif(id)
+
+    const pinEl = r.pin?.getElement()?.querySelector('.fl-pin')
+    if (anim) {
+      const el = r.path?.getElement()
+      if (el) {
+        el.setAttribute('pathLength', '1')
+        el.setAttribute('data-m-loop', '')
+        el.classList.remove('fl-redraw')
+        void el.getBoundingClientRect() // relance l'animation
+        el.classList.add('fl-redraw')
+        el.addEventListener(
+          'animationend',
+          () => {
+            el.classList.remove('fl-redraw')
+            el.removeAttribute('pathLength')
+          },
+          { once: true },
+        )
+      }
+    }
+
+    const ouvrirFiche = () => {
+      window.clearTimeout(vol.current.secours)
+      map.off('moveend', vol.current.fin)
+      const cur = refs.current.get(id)
+      if (!cur) return
+      if (cur.pin && map.hasLayer(cur.pin)) cur.pin.openPopup()
+      else cur.hit?.openPopup(cur.coords)
+      if (anim && pinEl) {
+        pinEl.setAttribute('data-m-loop', '')
+        pinEl.classList.remove('fl-pin--ping')
+        void pinEl.offsetWidth
+        pinEl.classList.add('fl-pin--ping')
+      }
+    }
+
+    const cadre = L.latLngBounds(r.pts)
+    const marges = { paddingTopLeft: [60, 70], paddingBottomRight: [60, 60], maxZoom: 8 }
+    if (!anim) {
+      map.fitBounds(cadre, { ...marges, animate: false })
+      ouvrirFiche()
+      return
+    }
+    vol.current.fin = () => {
+      vol.current.timer = window.setTimeout(ouvrirFiche, 180)
+    }
+    map.once('moveend', vol.current.fin)
+    /* filet de sécurité (vol interrompu ou onglet en arrière-plan) : on se
+       pose directement sur le cadrage final avant d'ouvrir la fiche */
+    vol.current.secours = window.setTimeout(() => {
+      map.off('moveend', vol.current.fin)
+      map.stop()
+      map.fitBounds(cadre, { ...marges, animate: false })
+      ouvrirFiche()
+    }, 2200)
+    map.flyToBounds(cadre, { ...marges, duration: 1.25, easeLinearity: 0.18 })
   }
 
   function cadrageFrance() {
@@ -679,7 +752,15 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         .on('mouseover', () => handlers.current.survol(f.id))
         .on('mouseout', () => handlers.current.survol(null))
         .addTo(c.traces)
+      /* le clic ne déroule plus la fiche tout de suite : zoom d'abord */
+      hit.off('click', hit._openPopup, hit)
+      hit.on('click', (ev) => {
+        L.DomEvent.stop(ev)
+        handlers.current.ouvrir(f.id)
+      })
       r.hit = hit
+      r.pts = geo.pts
+      r.coords = f.coords
 
       const tete = L.marker(geo.tete, {
         icon: L.divIcon({
@@ -733,6 +814,11 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         .bindPopup(fiche, { autoPan: false, maxWidth: 340, className: 'fl-popup' })
         .on('mouseover', () => handlers.current.survol(f.id))
         .on('mouseout', () => handlers.current.survol(null))
+      pin.off('click', pin._openPopup, pin)
+      pin.on('click', (ev) => {
+        L.DomEvent.stop(ev)
+        handlers.current.ouvrir(f.id)
+      })
       if (calque.arrivees) pin.addTo(c.arrivees)
       r.pin = pin
 
@@ -751,6 +837,8 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       setActif(fid)
       const titre = el?.querySelector('.pop__titre')?.textContent?.trim()
       if (el) {
+        if (animerRef.current) el.setAttribute('data-m-loop', '')
+        else el.removeAttribute('data-m-loop')
         el.setAttribute('role', 'dialog')
         el.setAttribute('aria-label', titre || tr('Fiche', 'Profile'))
       }
@@ -890,8 +978,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       window.scrollTo({ top: Math.max(0, haut), behavior: reduit() ? 'auto' : 'smooth' })
     }
     mapRef.current.invalidateSize({ animate: false })
-    mapRef.current.flyTo(f.coords, 7, { animate: !reduit(), duration: 0.7 })
-    const tm = window.setTimeout(() => refs.current.get(id)?.pin?.openPopup(), reduit() ? 80 : 900)
+    const tm = window.setTimeout(() => handlers.current.ouvrir(id), 450)
     return () => window.clearTimeout(tm)
   }, [routeParam, fleches, participants])
 
