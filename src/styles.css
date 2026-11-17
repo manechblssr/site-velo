@@ -4861,8 +4861,7 @@ main > .hero {
   stroke-width: 4.5px;
   animation-duration: calc(var(--dur, 3s) * 0.6), 400ms;
 }
-.is-histo .fl-flux,
-.is-calme .fl-flux {
+.is-histo .fl-flux {
   visibility: hidden;
 }
 
@@ -5059,7 +5058,7 @@ main > .hero {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* le flux reste (interrupteur « Animation » sur la carte), mais plus lent */
+  /* le flux reste visible, mais plus lent */
   .fl-flux {
     animation-duration: calc(var(--dur, 3s) * 1.6), 400ms;
   }

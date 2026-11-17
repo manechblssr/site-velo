@@ -268,24 +268,15 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   const [planif, setPlanif] = useState(null)
   const [histo, setHisto] = useState(null) // année affichée par la chronologie (null = off)
   const [lecture, setLecture] = useState(false)
-  /* flux animé sur les arcs : actif par défaut, interrupteur pour le couper
-     (mouvement continu → pause obligatoire, WCAG 2.2.2) ; mémorisé */
-  const [animer, setAnimer] = useState(() => {
-    try {
-      return localStorage.getItem('ff-carte-anim') !== '0'
-    } catch {
-      return true
-    }
-  })
+  /* animations de la carte (flux, zoom sur clic, fiche) : toujours actives */
+  const animer = true
   useEffect(() => {
     try {
-      localStorage.setItem('ff-carte-anim', animer ? '1' : '0')
+      localStorage.removeItem('ff-carte-anim') // ancien interrupteur retiré
     } catch {
-      /* préférence non mémorisée */
+      /* stockage indisponible */
     }
-    mapEl.current?.classList.toggle('is-calme', !animer)
-    animerRef.current = animer
-  }, [animer])
+  }, [])
 
   const stageRef = useRef(null)
   const mapEl = useRef(null)
@@ -733,7 +724,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         if (el) {
           el.setAttribute('pathLength', '1')
           /* exempté de la coupure globale « mouvement réduit » du kit :
-             l'interrupteur « Animation » de la carte garde la main */
+             le flux reste animé sur la carte */
           el.setAttribute('data-m-loop', '')
           el.style.setProperty('--dur', `${(2.4 + f.km / 380).toFixed(2)}s`)
           el.style.setProperty('--d', `${Math.min(i, 19) * 45 + 1100 + ((i * 397) % 1400)}ms`)
@@ -1266,16 +1257,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                   <span>{histo === null ? tr("Rejouer l'histoire", 'Replay history') : tr('Quitter', 'Exit')}</span>
                 </button>
               )}
-              <button
-                type="button"
-                className="cx-tool"
-                onClick={() => setAnimer((v) => !v)}
-                aria-pressed={animer}
-                title={animer ? tr("Mettre l'animation en pause", 'Pause the animation') : tr("Relancer l'animation", 'Resume the animation')}
-              >
-                <Icon name={animer ? 'pause' : 'play'} size={16} />
-                <span>{tr('Animation', 'Animation')}</span>
-              </button>
               <button type="button" className="cx-tool" onClick={recentrer} title={tr('Recentrer sur la France', 'Recentre on France')}>
                 <Icon name="crosshair" size={16} />
                 <span>{tr('Recentrer', 'Recentre')}</span>
