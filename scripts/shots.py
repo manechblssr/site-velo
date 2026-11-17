@@ -14,9 +14,9 @@ OUT = Path(__file__).resolve().parent.parent / "rapport" / "screens" / "vues"
 VUES = [
     ("presentation", "#/presentation", ".hero, .en-bref, main", "Les Flèches de France"),
     ("carte", "#/carte", ".map-canvas", "La carte des 20 Flèches"),
-    ("annuaire", "#/annuaire", "table.table-app--lite", "Annuaire des fléchards"),
+    ("annuaire", "#/annuaire", "table.table-app--lite", "Palmarès individuel"),
     ("defis", "#/defis", "table.table-app, .tabs, main", "Les défis"),
-    ("clubs", "#/clubs", "table.table-app, main", "Clubs & statistiques"),
+    ("clubs", "#/clubs", "table.table-app, main", "Palmarès club"),
 ]
 
 VIEWPORTS = [

@@ -13,9 +13,9 @@ const DICT = {
   // navigation
   'nav.presentation': ['Présentation & Règlement', 'Presentation & rules'],
   'nav.carte': ['Carte interactive', 'Interactive map'],
-  'nav.annuaire': ['Annuaire & Palmarès', 'Directory & records'],
+  'nav.annuaire': ['Palmarès individuel', 'Individual records'],
   'nav.defis': ['Défis & Formules', 'Challenges & formulas'],
-  'nav.clubs': ['Clubs & Statistiques', 'Clubs & statistics'],
+  'nav.clubs': ['Palmarès club', 'Club records'],
   'nav.club': ['Notre club', 'Our club'],
   'nav.orgas': ['Nos organisations', 'Our events'],
   'nav.pbrp': ['Paris-Brest-Paris Randonneur', 'Paris-Brest-Paris Randonneur'],
@@ -29,9 +29,9 @@ const DICT = {
 
   // vues
   'view.title': ['Flèches de France', 'Flèches de France'],
-  'view.annuaire': ['Annuaire des fléchards', "Riders' directory"],
+  'view.annuaire': ['Palmarès individuel', 'Individual records'],
   'view.defis': ['Les défis', 'The challenges'],
-  'view.clubs': ['Clubs & statistiques', 'Clubs & statistics'],
+  'view.clubs': ['Palmarès club', 'Club records'],
   'view.carte': ['La carte des 20 Flèches', 'Map of the 20 Flèches'],
 
   // filtres

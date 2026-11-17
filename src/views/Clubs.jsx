@@ -5,7 +5,7 @@ import { fmt, fmtKm, norm, downloadCSV } from '../lib/data.js'
 import { useL } from '../lib/i18n.js'
 
 /* ------------------------------------------------------------------ */
-/*  Vue « Clubs & Statistiques » : classement, fiche club, saison       */
+/*  Vue « Palmarès club »     : classement, fiche club, saison       */
 /* ------------------------------------------------------------------ */
 
 /* 455 clubs sur une seule page donnerait ~27 000 px de défilement : le
@@ -127,7 +127,7 @@ export default function Clubs() {
       <div className="wrap">
         <div className="section-head section-head--row">
           <h1 id="h-clubs" className="t-h2">
-            {L('Clubs & statistiques', 'Clubs & statistics')}{' '}
+            {L('Palmarès club', 'Club records')}{' '}
             <span className="muted">
               {fmt(clubs.length)} clubs · {fmt(meta(clubs, 'km'))} {L('km cumulés', 'km in total')}
             </span>
