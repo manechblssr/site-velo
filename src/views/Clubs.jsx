@@ -27,6 +27,7 @@ export default function Clubs() {
   const [, go] = useRoute()
   const [q, setQ] = useState('')
   const [sortBy, setSortBy] = useState('km')
+  const [sens, setSens] = useState(-1) // -1 : du plus grand au plus petit
   const [page, setPage] = useState(1)
   const [ouvert, setOuvert] = useState(null) // nom du club affiché en fiche
 
@@ -52,11 +53,39 @@ export default function Clubs() {
   const liste = useMemo(() => {
     const nq = norm(q)
     const out = clubs.filter((c) => !nq || norm(`${c.nom} ${c.code}`).includes(nq))
-    out.sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0) || a.nom.localeCompare(b.nom, 'fr'))
+    out.sort((a, b) => ((a[sortBy] ?? 0) - (b[sortBy] ?? 0)) * sens || a.nom.localeCompare(b.nom, 'fr'))
     return out
-  }, [clubs, q, sortBy])
+  }, [clubs, q, sortBy, sens])
 
-  useEffect(() => setPage(1), [q, sortBy])
+  useEffect(() => setPage(1), [q, sortBy, sens])
+
+  /* Clic sur une colonne : trie dessus (du plus grand au plus petit) ;
+     second clic sur la même colonne : inverse l'ordre. */
+  const trierPar = (key) => {
+    if (key === sortBy) setSens((x) => -x)
+    else {
+      setSortBy(key)
+      setSens(-1)
+    }
+  }
+  const enTete = (key, libelle) => {
+    const actif = sortBy === key
+    return (
+      <th key={key} scope="col" className="num" aria-sort={actif ? (sens > 0 ? 'ascending' : 'descending') : 'none'}>
+        <button
+          type="button"
+          className={`th-sort${actif ? ' is-active' : ''}`}
+          onClick={() => trierPar(key)}
+          title={L('Cliquer pour trier', 'Click to sort')}
+        >
+          {libelle}
+          <span className="th-sort__ico" aria-hidden="true">
+            {actif ? (sens > 0 ? '▲' : '▼') : '↕'}
+          </span>
+        </button>
+      </th>
+    )
+  }
 
   const pages = Math.max(1, Math.ceil(liste.length / PAR_PAGE))
   const pageSure = Math.min(page, pages)
@@ -118,7 +147,14 @@ export default function Clubs() {
           </div>
           <div className="toolbar__field">
             <label htmlFor="cl-tri"><Icon name="list" size={13} /> {L('Trier par', 'Sort by')}</label>
-            <select id="cl-tri" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <select
+              id="cl-tri"
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value)
+                setSens(-1)
+              }}
+            >
               {COLS.map((c) => (
                 <option key={c.key} value={c.key}>
                   {L(c.label, c.en)}
@@ -145,7 +181,11 @@ export default function Clubs() {
                 return c ? L(c.label, c.en).toLowerCase() : ''
               })()}
             </strong>
-            {L(' — cliquez sur un club pour ouvrir sa fiche.', ' — click a club to open its profile.')}
+            {sens > 0 ? L(' (ordre croissant)', ' (ascending)') : ''}
+            {L(
+              ' — cliquez sur l’en-tête d’une colonne pour changer le classement, sur un club pour ouvrir sa fiche.',
+              ' — click a column header to change the ranking, a club to open its profile.',
+            )}
           </span>
         </div>
 
@@ -159,24 +199,7 @@ export default function Clubs() {
                 </th>
                 <th scope="col">Club</th>
                 <th scope="col">Code</th>
-                <th scope="col" className="num">
-                  Km
-                </th>
-                <th scope="col" className="num">
-                  Flèches
-                </th>
-                <th scope="col" className="num">
-                  {L('Fléchards', 'Riders')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Or', 'Gold')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Argent', 'Silver')}
-                </th>
-                <th scope="col" className="num">
-                  Bronze
-                </th>
+                {COLS.map((c) => enTete(c.key, c.key === 'km' || c.key === 'B' ? c.label : L(c.label, c.en)))}
               </tr>
             </thead>
             <tbody>

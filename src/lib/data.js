@@ -37,6 +37,7 @@ export function loadAll() {
   ]).then(
     ([index, fleches, participants, homologations, clubs, stats, defis, departements]) => {
       normaliserDestinations(fleches.fleches, participants.rows, homologations.rows)
+      licenceDerniere(participants.rows, homologations.rows, defis)
       defis.express = verifierExpress(defis.express ?? [], fleches.fleches, homologations.rows)
       return {
       meta: index.meta,
@@ -63,6 +64,34 @@ function normaliserDestinations(fleches, participants, homologations) {
   const canon = (d) => (ids.has(d) ? d : (ALIAS_DEST[d] ?? d))
   for (const h of homologations) h.dest = canon(h.dest)
   for (const p of participants) if (Array.isArray(p.dests)) p.dests = [...new Set(p.dests.map(canon))]
+}
+
+/* Club et fédération d'un participant = ceux de sa DERNIÈRE homologation
+   (date de réalisation, puis n° d'homologation), et non la dernière valeur
+   lue dans le classeur, qui n'est pas dans l'ordre chronologique. Les
+   listes des défis reprennent la même licence. */
+function licenceDerniere(participants, homologations, defis) {
+  const cle = (h) => `${h.date || `${h.annee}-12-31`}|${String(h.num ?? 0).padStart(6, '0')}`
+  const dernier = new Map()
+  for (const h of homologations) {
+    if (!h.club) continue
+    const cur = dernier.get(h.pid)
+    if (!cur || cle(h) > cle(cur)) dernier.set(h.pid, h)
+  }
+  const byId = new Map()
+  for (const p of participants) {
+    byId.set(p.id, p)
+    const h = dernier.get(p.id)
+    if (!h) continue
+    p.club = h.club
+    if (h.fede) p.fede = h.fede
+  }
+  for (const liste of [defis.complete ?? [], defis.express ?? []]) {
+    for (const c of liste) {
+      const p = byId.get(c.id)
+      if (p) c.club = p.club
+    }
+  }
 }
 
 /* --- La Complète express ------------------------------------------------

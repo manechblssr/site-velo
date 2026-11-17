@@ -5225,7 +5225,7 @@ main > .hero {
 
 /* Chiffres clés de La Complète : une seule rangée */
 .kpis--complete {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: var(--s-5);
 }
 .kpis--complete .kpi--O { background: var(--or-bg); border-color: var(--or-line); }
@@ -5371,11 +5371,6 @@ main > .hero {
   min-width: 200px;
 }
 
-@media (max-width: 1023px) {
-  .kpis--complete {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
 
 @media (max-width: 640px) {
   /* onglets : une seule ligne qui défile au doigt */
@@ -5417,14 +5412,11 @@ main > .hero {
     font-size: 12px;
   }
   .kpis--complete {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--s-2);
   }
   .kpis--complete .kpi {
     padding: var(--s-3);
-  }
-  .kpis--complete .kpi--metal:last-child {
-    grid-column: 1 / -1;
   }
 
   /* Tableaux empilés : chaque ligne devient une fiche lisible */

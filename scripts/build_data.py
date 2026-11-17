@@ -591,6 +591,11 @@ def main():
     participants = []
     for p in parts.values():
         rows = sorted(p.pop("rows"), key=lambda x: (x["date"], x["annee"]))
+        # club / fédération : ceux de la dernière homologation (ordre chronologique)
+        for fld in ("club", "fede"):
+            vals = [x[fld] for x in rows if x[fld] and x[fld] != "?"]
+            if vals:
+                p[fld] = vals[-1]
         dests = sorted({x["dest"] for x in rows})
         km = sum(x["km"] for x in rows if isinstance(x["km"], (int, float)))
         dp = sum(x["dplus"] for x in rows if isinstance(x["dplus"], (int, float)))

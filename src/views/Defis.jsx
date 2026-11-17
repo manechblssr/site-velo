@@ -674,11 +674,6 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
     return m
   }, [participants])
 
-  const croisement = useMemo(() => {
-    let croise = 0
-    for (const c of defis.complete) if (officiels.has(c.nom)) croise += 1
-    return croise
-  }, [defis.complete, officiels])
 
   const filtre = sexe || q || metaux.length > 0
   const effacer = () => {
@@ -741,15 +736,13 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
           <span className="kpi__l">{L('Lauréats de La Complète', 'Complete finishers')}</span>
         </div>
         <div className="kpi">
-          <b className="kpi__v">{defis.complete.filter((c) => c.sexe === 'F').length}</b>
-          <span className="kpi__l">{L('dont femmes', 'of whom women')}</span>
+          <b className="kpi__v">{defis.complete.filter((c) => c.sexe === 'H').length}</b>
+          <span className="kpi__l">{L('Hommes', 'Men')}</span>
         </div>
-        {METAUX.map(([f, , , dfr, den]) => (
-          <div key={f} className={`kpi kpi--metal kpi--${f}`}>
-            <b className="kpi__v">{parMetal[f]}</b>
-            <span className="kpi__l">{L(`Complète ${dfr}`, `Complete ${den}`)}</span>
-          </div>
-        ))}
+        <div className="kpi">
+          <b className="kpi__v">{defis.complete.filter((c) => c.sexe === 'F').length}</b>
+          <span className="kpi__l">{L('Femmes', 'Women')}</span>
+        </div>
       </div>
 
       <div className="toolbar" role="group" aria-label={L('Filtres de La Complète', 'The Complete filters')}>
@@ -847,7 +840,6 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
             <tbody>
               {visible.map((c) => {
                 const p = parNom.get(norm(c.nom))
-                const officiel = officiels.get(c.nom)
                 return (
                   <tr key={`${c.nom}-${c.id}`}>
                     <th scope="row">
@@ -872,11 +864,6 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
                     ))}
                     <td data-label={L('Homologations', 'Validated rides')} className="num">
                       {c.nb}
-                      {officiel !== undefined && officiel !== c.nb && (
-                        <span className="cell-sub" title={L('Valeur de l’onglet « 20 flèches »', 'Value in the “20 Flèches” sheet')}>
-                          {L('onglet', 'sheet')} : {officiel}
-                        </span>
-                      )}
                     </td>
                     <td data-label={L('Période', 'Period')} className="cell-period">
                       {dateCourte(c.premiere)} → {dateCourte(c.derniere)}
@@ -901,8 +888,8 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
       />
       <p className="t-small muted">
         {L(
-          `Lauréats calculés sur le journal détaillé (20 destinations distinctes), croisés avec l'onglet historique « Les 20 flèches » du classeur : ${stats.tcdPalmares.complete20.length} noms dans l'onglet, ${croisement} présents dans les deux listes. Les écarts de décompte sont signalés sous le nombre d'homologations.`,
-          `Finishers computed from the detailed log (20 distinct destinations), cross-checked against the historical “Les 20 flèches” sheet: ${stats.tcdPalmares.complete20.length} names in the sheet, ${croisement} in both lists. Count discrepancies are shown under the number of validated rides.`,
+          'Lauréats calculés sur le journal des homologations (20 destinations distinctes). Le club indiqué est celui de la dernière homologation de chaque cycliste.',
+          'Finishers computed from the validated rides log (20 distinct destinations). The club shown is the one of each rider’s latest validated ride.',
         )}
       </p>
     </>
