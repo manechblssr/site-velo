@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import Icon, { iconHtml } from '../components/Icon.jsx'
 import Badge from '../components/Badge.jsx'
 import Planificateur from '../components/Planificateur.jsx'
-import { makeT } from '../lib/i18n.js'
+import { makeT, pick, nomClub } from '../lib/i18n.js'
 import { fmt, norm } from '../lib/data.js'
 
 /* ---------------------------------------------------------------------------
@@ -73,7 +73,7 @@ const STYLE_FRANCE = {
 
 /* Tranches de distance : filtre + couleur des arcs (rampe du bleu ACP). */
 const TRANCHES_KM = [
-  { id: 'toutes', label: 'Toutes', test: () => true },
+  { id: 'toutes', label: 'Toutes', en: 'All', test: () => true },
   { id: 'court', label: '≤ 300 km', test: (f) => f.km <= 300, couleur: '#5b93dc' },
   { id: 'moyen', label: '300 – 600 km', test: (f) => f.km > 300 && f.km <= 600, couleur: '#1f5cbf' },
   { id: 'long', label: '> 600 km', test: (f) => f.km > 600, couleur: '#0b2b66' },
@@ -92,12 +92,13 @@ const COULEUR = {
 }
 const COULEUR_FORMULE = { O: '#b8892a', A: '#7b8594', B: '#a4602f' }
 const NOM_FORMULE = { O: 'Or', A: 'Argent', B: 'Bronze' }
+const NOM_FORMULE_EN = { O: 'Gold', A: 'Silver', B: 'Bronze' }
 const RANG = { O: 3, A: 2, B: 1 }
 
 const TRIS = [
-  { id: 'km', label: 'Distance', icon: 'ruler' },
-  { id: 'nom', label: 'A – Z', icon: 'list' },
-  { id: 'pop', label: 'Fréquentation', icon: 'users' },
+  { id: 'km', label: 'Distance', en: 'Distance', icon: 'ruler' },
+  { id: 'nom', label: 'A – Z', en: 'A – Z', icon: 'list' },
+  { id: 'pop', label: 'Fréquentation', en: 'Popularity', icon: 'users' },
 ]
 
 function esc(v) {
@@ -163,15 +164,17 @@ function centrerBlocPopup(map, popup) {
   }
 }
 
-function ficheHtml(f, kmMax, etat) {
+function ficheHtml(f, kmMax, etat, lang) {
   const ic = iconHtml
+  const tr = pick(lang)
+  const NF = lang === 'en' ? NOM_FORMULE_EN : NOM_FORMULE
   const h = f.hist
   const ecart =
     h?.km && h.km !== f.km
-      ? `<p class="pop-ecart">${ic('info', 12)} Valeur historique du classeur : ${fmt(h.km)} km / ${fmt(h.dplus)} m</p>`
+      ? `<p class="pop-ecart">${ic('info', 12)} ${tr('Valeur historique du classeur :', 'Historical workbook value:')} ${fmt(h.km)} km / ${fmt(h.dplus)} m</p>`
       : ''
   const perso = etat
-    ? `<p class="pop__perso">${ic('check', 13)} Validée en <b>${NOM_FORMULE[etat.formule] ?? '—'}</b>${
+    ? `<p class="pop__perso">${ic('check', 13)} ${tr('Validée en', 'Validated in')} <b>${NF[etat.formule] ?? '—'}</b>${
         etat.annee ? ` · ${etat.annee}` : ''
       }</p>`
     : ''
@@ -191,34 +194,62 @@ function ficheHtml(f, kmMax, etat) {
       )}"></span></div>
       <div class="pop__grid">
         <span>${ic('ruler', 14)}<b>${fmt(f.km)} km</b><i>distance</i></span>
-        <span>${ic('gauge', 14)}<b>${fmt(f.dplus)} m</b><i>de D+</i></span>
-        <span>${ic('medal', 14)}<b>${fmt(f.stats.total)}</b><i>homologations</i></span>
+        <span>${ic('gauge', 14)}<b>${fmt(f.dplus)} m</b><i>${tr('de D+', 'climbing')}</i></span>
+        <span>${ic('medal', 14)}<b>${fmt(f.stats.total)}</b><i>${tr('homologations', 'validated rides')}</i></span>
       </div>
       <ul class="pop__delais">
-        <li><span class="formule formule--O">Or</span><b>${esc(f.delais.O)}</b></li>
-        <li><span class="formule formule--A">Argent</span><b>${esc(f.delais.A)}</b></li>
-        <li><span class="formule formule--B">Bronze</span><b>${esc(f.delais.B)}</b></li>
+        <li><span class="formule formule--O">${NF.O}</span><b>${esc(f.delais.O)}</b></li>
+        <li><span class="formule formule--A">${NF.A}</span><b>${esc(f.delais.A)}</b></li>
+        <li><span class="formule formule--B">${NF.B}</span><b>${esc(f.delais.B)}</b></li>
       </ul>
-      <p class="pop__depart">${ic('flag', 13)} Départ décalé : <b>${esc(f.depart.commune)}</b> · ${fmt(
+      <p class="pop__depart">${ic('flag', 13)} ${tr('Départ décalé :', 'Alternative start:')} <b>${esc(f.depart.commune)}</b> · ${fmt(
         f.depart.km,
       )} km${f.depart.dplus ? ` · ${fmt(f.depart.dplus)} m` : ''}</p>
-      <p class="pop__meta">${ic('award', 13)} Or ${fmt(f.stats.O)} · Argent ${fmt(f.stats.A)} · Bronze ${fmt(
+      <p class="pop__meta">${ic('award', 13)} ${NF.O} ${fmt(f.stats.O)} · ${NF.A} ${fmt(f.stats.A)} · ${NF.B} ${fmt(
         f.stats.B,
       )}</p>
       ${ecart}
       <div class="pop__liens">
         <a href="${esc(f.openrunner)}" target="_blank" rel="noreferrer">${ic('external-link', 13)} OpenRunner</a>
-        <a href="${esc(f.pdf)}" target="_blank" rel="noreferrer">${ic('file-text', 13)} Feuille de route</a>
+        <a href="${esc(f.pdf)}" target="_blank" rel="noreferrer">${ic('file-text', 13)} ${tr('Feuille de route', 'Route sheet')}</a>
       </div>
       <div class="pop__actions">
-        <button type="button" class="btn btn--primary btn--sm pop__plan">${ic('calculator', 14)} Planifier</button>
-        <button type="button" class="btn btn--secondary btn--sm pop__btn">${ic('trophy', 14)} Lauréats</button>
+        <button type="button" class="btn btn--primary btn--sm pop__plan">${ic('calculator', 14)} ${tr('Planifier', 'Plan')}</button>
+        <button type="button" class="btn btn--secondary btn--sm pop__btn">${ic('trophy', 14)} ${tr('Lauréats', 'Finishers')}</button>
       </div>
     </div>`
 }
 
+/** Nombre qui défile jusqu'à sa valeur (ease-out), instantané si mouvement réduit. */
+function Compteur({ v, ms = 1200 }) {
+  const [aff, setAff] = useState(reduit() ? v : 0)
+  const depuis = useRef(0)
+  useEffect(() => {
+    if (reduit()) {
+      setAff(v)
+      return
+    }
+    const de = depuis.current
+    const t0 = performance.now()
+    let raf = 0
+    const pas = (t) => {
+      const k = Math.min(1, (t - t0) / ms)
+      const e = 1 - (1 - k) ** 3
+      const x = Math.round(de + (v - de) * e)
+      depuis.current = x
+      setAff(x)
+      if (k < 1) raf = requestAnimationFrame(pas)
+    }
+    raf = requestAnimationFrame(pas)
+    return () => cancelAnimationFrame(raf)
+  }, [v, ms])
+  return <span className="num-tab">{fmt(aff)}</span>
+}
+
 export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenParticipant }) {
   const t = makeT(lang)
+  const tr = pick(lang)
+  const NF = lang === 'en' ? NOM_FORMULE_EN : NOM_FORMULE
   const { fleches, participants, homologations, meta } = data
 
   const [tranche, setTranche] = useState('toutes')
@@ -235,6 +266,25 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   const [plein, setPlein] = useState(false)
   const [molette, setMolette] = useState(false)
   const [planif, setPlanif] = useState(null)
+  const [histo, setHisto] = useState(null) // année affichée par la chronologie (null = off)
+  const [lecture, setLecture] = useState(false)
+  /* flux animé sur les arcs : actif par défaut, interrupteur pour le couper
+     (mouvement continu → pause obligatoire, WCAG 2.2.2) ; mémorisé */
+  const [animer, setAnimer] = useState(() => {
+    try {
+      return localStorage.getItem('ff-carte-anim') !== '0'
+    } catch {
+      return true
+    }
+  })
+  useEffect(() => {
+    try {
+      localStorage.setItem('ff-carte-anim', animer ? '1' : '0')
+    } catch {
+      /* préférence non mémorisée */
+    }
+    mapEl.current?.classList.toggle('is-calme', !animer)
+  }, [animer])
 
   const stageRef = useRef(null)
   const mapEl = useRef(null)
@@ -244,6 +294,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   const refs = useRef(new Map()) // id → { path, hit, tete, pin }
   const handlers = useRef({})
   const zoomDeparts = useRef(null)
+  const refParis = useRef(null)
   handlers.current = {
     laureats: onOpenFleche,
     planifier: (id) => setPlanif(id),
@@ -251,6 +302,28 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   }
 
   const kmMax = useMemo(() => Math.max(...fleches.map((f) => f.km)), [fleches])
+
+  /* --- chronologie : homologations cumulées par flèche, saison après saison */
+  const chrono = useMemo(() => {
+    const annees = [...new Set(homologations.map((h) => h.annee))].filter(Boolean).sort((a, b) => a - b)
+    const parAnnee = new Map(annees.map((y) => [y, new Map()]))
+    for (const h of homologations) {
+      const m = parAnnee.get(h.annee)
+      if (m) m.set(h.dest, (m.get(h.dest) ?? 0) + 1)
+    }
+    const cumul = new Map()
+    const courant = new Map()
+    let total = 0
+    for (const y of annees) {
+      for (const [d, n] of parAnnee.get(y)) {
+        courant.set(d, (courant.get(d) ?? 0) + n)
+        total += n
+      }
+      cumul.set(y, { parFleche: new Map(courant), total, saison: parAnnee.get(y) })
+    }
+    const max = Math.max(1, ...courant.values())
+    return { annees, cumul, max }
+  }, [homologations])
 
   /* --- recherche de participant ----------------------------------------- */
   const resultats = useMemo(() => {
@@ -368,13 +441,21 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       scrollWheelZoom: false,
       zoomSnap: 0.5,
     })
-    L.control.zoom({ position: 'bottomright', zoomInTitle: 'Zoomer', zoomOutTitle: 'Dézoomer' }).addTo(map)
+    L.control
+      .zoom({ position: 'bottomright', zoomInTitle: tr('Zoomer', 'Zoom in'), zoomOutTitle: tr('Dézoomer', 'Zoom out') })
+      .addTo(map)
     mapRef.current = map
     /* cadrage initial : toute la France des 20 flèches, quelle que soit la hauteur */
     window.setTimeout(() => {
       if (mapRef.current !== map) return
       map.invalidateSize({ animate: false })
-      if (!routeParam) map.fitBounds(cadrageFrance(), { animate: false })
+      if (routeParam) return
+      if (reduit()) map.fitBounds(cadrageFrance(), { animate: false })
+      else {
+        /* entrée en scène : on part de plus haut et on plonge sur la France */
+        map.setView(CENTRE_FRANCE, 5, { animate: false })
+        map.flyToBounds(cadrageFrance(), { duration: 1.4, easeLinearity: 0.2 })
+      }
     }, 60)
 
     let vivant = true
@@ -432,7 +513,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     }
 
     /* Paris : repère pulsant, toujours au-dessus */
-    L.marker(PARIS, {
+    refParis.current = L.marker(PARIS, {
       icon: L.divIcon({
         className: 'fl-paris',
         html: '<span class="fl-paris__pulse"></span><span class="fl-paris__dot"></span><span class="fl-paris__lbl">Paris</span>',
@@ -442,7 +523,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       keyboard: false,
       zIndexOffset: 1000,
     })
-      .bindTooltip('Paris · point de départ ou d’arrivée des 20 Flèches', {
+      .bindTooltip(tr('Paris · point de départ ou d’arrivée des 20 Flèches', 'Paris · start or finish point of the 20 Flèches'), {
         direction: 'top',
         offset: [0, -12],
         className: 'fl-tip',
@@ -471,6 +552,19 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       mapRef.current = null
     }
   }, [])
+
+  /* --- libellés Leaflet créés à l'initialisation : suivent la langue ---- */
+  useEffect(() => {
+    const cont = mapEl.current
+    if (!cont) return
+    cont.querySelector('.leaflet-control-zoom-in')?.setAttribute('title', tr('Zoomer', 'Zoom in'))
+    cont.querySelector('.leaflet-control-zoom-out')?.setAttribute('title', tr('Dézoomer', 'Zoom out'))
+    const paris = refParis.current
+    paris?.setTooltipContent(
+      tr('Paris · point de départ ou d’arrivée des 20 Flèches', 'Paris · start or finish point of the 20 Flèches'),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang])
 
   /* --- dimension -------------------------------------------------------- */
   useEffect(() => {
@@ -518,7 +612,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         className: 'fl-depart',
       })
         .bindTooltip(
-          `<b>${esc(f.depart.commune)}</b><br>Départ décalé · ${esc(f.nom)} · ${fmt(f.depart.km)} km`,
+          `<b>${esc(f.depart.commune)}</b><br>${tr('Départ décalé', 'Alternative start')} · ${esc(f.nom)} · ${fmt(f.depart.km)} km`,
           { direction: 'top', className: 'fl-tip' },
         )
         .addTo(c.departs)
@@ -532,9 +626,9 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         mode === 'base' ? couleurDistance(f.km) : manquant ? COULEUR.manquante : COULEUR.realisee
       const geo = arc(PARIS, f.coords)
       const delai = `${Math.min(i, 19) * 45}ms`
-      const fiche = () => ficheHtml(f, kmMax, mode === 'realisee' ? e : null)
+      const fiche = () => ficheHtml(f, kmMax, mode === 'realisee' ? e : null, lang)
       const tip = `<b>${esc(f.nom)}</b> · ${fmt(f.km)} km · ${fmt(f.dplus)} m D+${
-        e ? ` · ${NOM_FORMULE[e.formule] ?? ''}` : ''
+        e ? ` · ${NF[e.formule] ?? ''}` : ''
       }`
       const r = { id: f.id }
 
@@ -549,6 +643,30 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         className: `fl-trace${manquant ? ' fl-trace--manquante' : ''}`,
       }).addTo(c.traces)
       r.path = path
+      r.base = { weight: manquant ? 1.6 : 2.8, opacity: manquant ? 0.55 : 0.92, dashArray: manquant ? '5 7' : null }
+      r.km = f.km
+
+      /* flux : impulsions lumineuses qui partent de Paris le long de l'arc */
+      if (!manquant) {
+        const flux = L.polyline(geo.pts, {
+          color: '#ffffff',
+          weight: 3.2,
+          opacity: 0.95,
+          lineCap: 'round',
+          interactive: false,
+          className: 'fl-flux',
+        }).addTo(c.traces)
+        const el = flux.getElement()
+        if (el) {
+          el.setAttribute('pathLength', '1')
+          /* exempté de la coupure globale « mouvement réduit » du kit :
+             l'interrupteur « Animation » de la carte garde la main */
+          el.setAttribute('data-m-loop', '')
+          el.style.setProperty('--dur', `${(2.4 + f.km / 380).toFixed(2)}s`)
+          el.style.setProperty('--d', `${Math.min(i, 19) * 45 + 1100 + ((i * 397) % 1400)}ms`)
+        }
+        r.flux = flux
+      }
 
       const hit = L.polyline(geo.pts, {
         color: '#000',
@@ -599,9 +717,11 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       const pin = L.marker(f.coords, {
         icon: L.divIcon({
           className: `fl-pin-wrap${manquant ? ' is-manquante' : ''}`,
-          html: `<span class="fl-pin${formuleCls}" style="--c:${couleur}${
+          html: `<span class="fl-pin${formuleCls}${anime ? ' fl-pin--anime' : ''}" style="--c:${couleur};--d:${delai}${
             mode === 'realisee' && e?.formule ? `;--f:${COULEUR_FORMULE[e.formule]}` : ''
-          }"></span><span class="fl-pin__lbl">${esc(f.nom)}<em>${fmt(f.km)} km</em></span>`,
+          }"></span><span class="fl-pin__lbl${anime ? ' fl-pin__lbl--anime' : ''}" style="--d:${delai}">${esc(
+            f.nom,
+          )}<em>${fmt(f.km)} km</em></span>`,
           iconSize: [16, 16],
           iconAnchor: [8, 8],
           popupAnchor: [0, -8],
@@ -632,9 +752,9 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       const titre = el?.querySelector('.pop__titre')?.textContent?.trim()
       if (el) {
         el.setAttribute('role', 'dialog')
-        el.setAttribute('aria-label', titre || 'Fiche')
+        el.setAttribute('aria-label', titre || tr('Fiche', 'Profile'))
       }
-      el?.querySelector('.leaflet-popup-close-button')?.setAttribute('aria-label', 'Fermer la fiche')
+      el?.querySelector('.leaflet-popup-close-button')?.setAttribute('aria-label', tr('Fermer la fiche', 'Close profile'))
       centrerBlocPopup(map, ev.popup)
       if (fid) {
         el.querySelector('.pop__btn')?.addEventListener('click', () => handlers.current.laureats?.(fid), {
@@ -648,7 +768,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     })
     map.on('popupclose', () => setActif(null))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibles, parParticipant, formule, fleches, kmMax])
+  }, [visibles, parParticipant, formule, fleches, kmMax, lang])
 
   /* --- calques ---------------------------------------------------------- */
   useEffect(() => {
@@ -677,9 +797,76 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
       r.path?.getElement()?.classList.toggle('is-focus', on)
       r.tete?.getElement()?.classList.toggle('is-focus', on)
       r.pin?.getElement()?.classList.toggle('is-focus', on)
+      r.flux?.getElement()?.classList.toggle('is-focus', on)
       if (on) r.path?.bringToFront()
     }
   }, [focus, visibles, parParticipant, formule, calque])
+
+  /* --- chronologie : épaisseur des arcs = homologations cumulées --------- */
+  useEffect(() => {
+    const cont = mapEl.current
+    if (!cont) return
+    cont.classList.toggle('is-histo', histo !== null)
+    const etat = histo !== null ? chrono.cumul.get(histo) : null
+    for (const [id, r] of refs.current) {
+      const pinEl = r.pin?.getElement()
+      const em = pinEl?.querySelector('.fl-pin__lbl em')
+      if (!etat) {
+        r.path?.setStyle(r.base)
+        if (pinEl) pinEl.style.opacity = ''
+        if (em) em.textContent = `${fmt(r.km)} km`
+        continue
+      }
+      const n = etat.parFleche.get(id) ?? 0
+      const ratio = Math.sqrt(n / chrono.max)
+      r.path?.setStyle({
+        weight: n ? 1.4 + 9 * ratio : 1,
+        opacity: n ? 0.45 + 0.55 * ratio : 0.12,
+        dashArray: n ? null : '3 6',
+      })
+      if (pinEl) {
+        pinEl.style.opacity = n ? '1' : '0.35'
+        const neuf = etat.saison.get(id) ?? 0
+        const pin = pinEl.querySelector('.fl-pin')
+        if (pin && neuf && animer) {
+          pin.classList.remove('fl-pin--ping')
+          void pin.offsetWidth // relance l'animation
+          pin.classList.add('fl-pin--ping')
+        }
+      }
+      if (em) em.textContent = fmt(n)
+    }
+  }, [histo, chrono, visibles, parParticipant, formule, lang, animer])
+
+  /* lecture automatique, une saison toutes les 0,8 s */
+  useEffect(() => {
+    if (!lecture) return
+    const dernier = chrono.annees[chrono.annees.length - 1]
+    const id = window.setInterval(() => {
+      setHisto((y) => {
+        if (y === null || y >= dernier) {
+          setLecture(false)
+          return y ?? dernier
+        }
+        return chrono.annees.find((a) => a > y) ?? dernier
+      })
+    }, 800)
+    return () => window.clearInterval(id)
+  }, [lecture, chrono])
+
+  /* la chronologie s'efface quand on suit un participant */
+  useEffect(() => {
+    if (sel) {
+      setLecture(false)
+      setHisto(null)
+    }
+  }, [sel])
+
+  function rejouer() {
+    mapRef.current?.closePopup()
+    setHisto(chrono.annees[0])
+    setLecture(true)
+  }
 
   /* --- arrivée par lien : #/carte/DIEPPE, #/carte/fleche=…, #/carte/pid=… */
   useEffect(() => {
@@ -731,41 +918,41 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
         <header className="cx-head">
           <div>
             <p className="cx-kicker">
-              <Icon name="map" size={14} /> Carte interactive
+              <Icon name="map" size={14} /> {t('nav.carte')}
             </p>
             <h1 id="h-carte" className="cx-title">
               {t('view.carte')}
             </h1>
           </div>
-          <ul className="cx-stats" aria-label="Chiffres clés">
+          <ul className="cx-stats" aria-label={tr('Chiffres clés', 'Key figures')}>
             <li>
               <Icon name="route" size={16} />
-              <b>{fleches.length}</b> flèches
+              <b><Compteur v={fleches.length} /></b> {tr('flèches', 'Flèches')}
             </li>
             <li>
               <Icon name="flag" size={16} />
-              <b>{nbDeparts}</b> départs décalés
+              <b><Compteur v={nbDeparts} /></b> {tr('départs décalés', 'alternative starts')}
             </li>
             <li>
               <Icon name="medal" size={16} />
-              <b>{fmt(meta.homologations)}</b> homologations
+              <b><Compteur v={meta.homologations} /></b> {tr('homologations', 'validated rides')}
             </li>
           </ul>
         </header>
 
         {/* ------------------------------------------------------ commandes */}
-        <div className="cx-bar" role="group" aria-label="Filtres de la carte">
+        <div className="cx-bar" role="group" aria-label={tr('Filtres de la carte', 'Map filters')}>
           <div className="cx-search">
             <Icon name="user" size={16} className="cx-search__ico" />
             <label htmlFor="map-q" className="sr-only">
-              Afficher le parcours d’un participant
+              {tr('Afficher le parcours d’un participant', 'Show a rider’s Flèches')}
             </label>
             <input
               id="map-q"
               type="search"
               value={quest}
               autoComplete="off"
-              placeholder="Afficher les flèches d’un participant…"
+              placeholder={tr('Afficher les flèches d’un participant…', 'Show a rider’s Flèches…')}
               onChange={(e) => setQuest(e.target.value)}
             />
             {resultats.length > 0 && (
@@ -783,7 +970,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                         {p.nom} {p.prenom}
                       </b>
                       <span>
-                        {p.club || 'Sans club'} · {p.distinctes ?? p.nb} / 20 flèches
+                        {nomClub(p.club, lang) || t('f.none')} · {p.distinctes ?? p.nb} / 20 {tr('flèches', 'Flèches')}
                       </span>
                     </button>
                   </li>
@@ -792,7 +979,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
             )}
           </div>
 
-          <div className="cx-seg" role="group" aria-label="Distance">
+          <div className="cx-seg" role="group" aria-label={tr('Distance', 'Distance')}>
             {TRANCHES_KM.map((x) => (
               <button
                 key={x.id}
@@ -801,16 +988,16 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                 onClick={() => setTranche(x.id)}
               >
                 {x.couleur && <i style={{ background: x.couleur }} />}
-                {x.label}
+                {tr(x.label, x.en)}
               </button>
             ))}
           </div>
 
-          <div className="cx-toggles" role="group" aria-label="Calques">
+          <div className="cx-toggles" role="group" aria-label={tr('Calques', 'Layers')}>
             {[
-              ['traces', 'route', 'Flèches'],
-              ['arrivees', 'map-pin', 'Arrivées'],
-              ['departs', 'flag', 'Départs décalés'],
+              ['traces', 'route', tr('Flèches', 'Flèches')],
+              ['arrivees', 'map-pin', tr('Arrivées', 'Finishes')],
+              ['departs', 'flag', tr('Départs décalés', 'Alternative starts')],
             ].map(([k, ico, label]) => (
               <button
                 key={k}
@@ -828,7 +1015,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
 
         {/* ------------------------------------------ participant sélectionné */}
         {sel && (
-          <div className="civ cx-civ" role="group" aria-label="Participant sélectionné">
+          <div className="civ cx-civ" role="group" aria-label={tr('Participant sélectionné', 'Selected rider')}>
             <div className="civ__id">
               <span className="civ__avatar" aria-hidden="true">
                 {(sel.prenom || '?')[0]}
@@ -840,43 +1027,43 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                 </p>
                 <p className="civ__meta">
                   <Icon name="building" size={13} />
-                  {sel.club || 'Sans club'}
+                  {sel.club || t('f.none')}
                   {sel.ville ? ` · ${sel.ville}` : ''}
                 </p>
               </div>
             </div>
             <div className="civ__prog">
-              <div className="civ__bar" role="img" aria-label={`${realises} flèches validées sur ${fleches.length}`}>
+              <div className="civ__bar" role="img" aria-label={tr(`${realises} flèches validées sur ${fleches.length}`, `${realises} of ${fleches.length} Flèches validated`)}>
                 <span style={{ width: `${Math.round((realises / fleches.length) * 100)}%` }} />
               </div>
               <p className="civ__chiffres">
                 <b>
                   {realises} / {fleches.length}
                 </b>{' '}
-                flèches validées · <b>{fmt(sel.nb)}</b> homologations
+                {tr('flèches validées', 'Flèches validated')} · <b>{fmt(sel.nb)}</b> {tr('homologations', 'validated rides')}
               </p>
             </div>
-            <div className="cx-seg cx-seg--formule" role="group" aria-label="Formule obtenue">
+            <div className="cx-seg cx-seg--formule" role="group" aria-label={tr('Formule obtenue', 'Formula achieved')}>
               <button type="button" aria-pressed={!formule} onClick={() => setFormule('')}>
-                Toutes
+                {tr('Toutes', 'All')}
               </button>
               {['O', 'A', 'B'].map((c) => (
                 <button key={c} type="button" aria-pressed={formule === c} onClick={() => setFormule(c)}>
                   <i style={{ background: COULEUR_FORMULE[c] }} />
-                  {NOM_FORMULE[c]} <b>{fo[c]}</b>
+                  {NF[c]} <b>{fo[c]}</b>
                 </button>
               ))}
             </div>
             <div className="civ__actions">
               <button type="button" className="btn btn--primary btn--sm" onClick={() => onOpenParticipant(sel.id)}>
-                <Icon name="trophy" size={14} /> Fiche palmarès
+                <Icon name="trophy" size={14} /> {tr('Fiche palmarès', 'Rider record')}
               </button>
               <button
                 type="button"
                 className="icon-btn"
                 onClick={() => setSel(null)}
-                aria-label="Retirer le participant"
-                title="Retirer"
+                aria-label={tr('Retirer le participant', 'Remove the rider')}
+                title={tr('Retirer', 'Remove')}
               >
                 <Icon name="x" size={16} />
               </button>
@@ -886,31 +1073,31 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
 
         {/* ------------------------------------------------- carte + liste */}
         <div className={`cx-stage${plein ? ' is-plein' : ''}`} ref={stageRef}>
-          <aside className="cx-list" aria-label="Liste des flèches">
+          <aside className="cx-list" aria-label={tr('Liste des flèches', 'List of Flèches')}>
             <div className="cx-list__head">
               <div className="cx-list__filtre">
                 <Icon name="search" size={14} />
                 <label htmlFor="cx-filtre" className="sr-only">
-                  Filtrer les flèches
+                  {tr('Filtrer les flèches', 'Filter the Flèches')}
                 </label>
                 <input
                   id="cx-filtre"
                   type="search"
                   value={filtre}
-                  placeholder="Filtrer les flèches"
+                  placeholder={tr('Filtrer les flèches', 'Filter the Flèches')}
                   onChange={(e) => setFiltre(e.target.value)}
                 />
               </div>
-              <div className="cx-tri" role="group" aria-label="Trier">
+              <div className="cx-tri" role="group" aria-label={tr('Trier', 'Sort')}>
                 {TRIS.map((x) => (
                   <button
                     key={x.id}
                     type="button"
                     aria-pressed={tri === x.id}
                     onClick={() => setTri(x.id)}
-                    title={`Trier par ${x.label.toLowerCase()}`}
+                    title={tr(`Trier par ${x.label.toLowerCase()}`, `Sort by ${x.en.toLowerCase()}`)}
                   >
-                    <Icon name={x.icon} size={13} /> {x.label}
+                    <Icon name={x.icon} size={13} /> {tr(x.label, x.en)}
                   </button>
                 ))}
               </div>
@@ -956,9 +1143,9 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                         {mode === 'realisee' ? (
                           <Badge code={e.formule} />
                         ) : mode === 'manquante' ? (
-                          <span className="cx-item__todo">à faire</span>
+                          <span className="cx-item__todo">{tr('à faire', 'to do')}</span>
                         ) : (
-                          <span className="cx-item__nb" title="Homologations">
+                          <span className="cx-item__nb" title={tr('Homologations', 'Validated rides')}>
                             <Icon name="medal" size={12} /> {fmt(f.stats.total)}
                           </span>
                         )}
@@ -967,7 +1154,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                   </li>
                 )
               })}
-              {liste.length === 0 && <li className="cx-empty">Aucune flèche ne correspond.</li>}
+              {liste.length === 0 && <li className="cx-empty">{tr('Aucune flèche ne correspond.', 'No Flèche matches.')}</li>}
             </ul>
           </aside>
 
@@ -976,49 +1163,134 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
               ref={mapEl}
               className="map-canvas cx-canvas"
               role="application"
-              aria-label="Carte des 20 Flèches de France"
+              aria-label={tr('Carte des 20 Flèches de France', 'Map of the 20 Flèches de France')}
             />
 
             <div className="cx-tools">
-              <button type="button" className="cx-tool" onClick={recentrer} title="Recentrer sur la France">
+              {!sel && (
+                <button
+                  type="button"
+                  className="cx-tool cx-tool--accent"
+                  onClick={histo === null ? rejouer : () => (setLecture(false), setHisto(null))}
+                  aria-pressed={histo !== null}
+                  title={tr("Rejouer l'histoire des Flèches saison par saison", 'Replay the Flèches history season by season')}
+                >
+                  <Icon name={histo === null ? 'history' : 'x'} size={16} />
+                  <span>{histo === null ? tr("Rejouer l'histoire", 'Replay history') : tr('Quitter', 'Exit')}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                className="cx-tool"
+                onClick={() => setAnimer((v) => !v)}
+                aria-pressed={animer}
+                title={animer ? tr("Mettre l'animation en pause", 'Pause the animation') : tr("Relancer l'animation", 'Resume the animation')}
+              >
+                <Icon name={animer ? 'pause' : 'play'} size={16} />
+                <span>{tr('Animation', 'Animation')}</span>
+              </button>
+              <button type="button" className="cx-tool" onClick={recentrer} title={tr('Recentrer sur la France', 'Recentre on France')}>
                 <Icon name="crosshair" size={16} />
-                <span>Recentrer</span>
+                <span>{tr('Recentrer', 'Recentre')}</span>
               </button>
               <button
                 type="button"
                 className="cx-tool"
                 onClick={basculerPleinEcran}
                 aria-pressed={plein}
-                title={plein ? 'Quitter le plein écran' : 'Plein écran'}
+                title={plein ? tr('Quitter le plein écran', 'Exit full screen') : tr('Plein écran', 'Full screen')}
               >
                 <Icon name={plein ? 'minimize' : 'maximize'} size={16} />
-                <span>{plein ? 'Réduire' : 'Plein écran'}</span>
+                <span>{plein ? tr('Réduire', 'Exit') : tr('Plein écran', 'Full screen')}</span>
               </button>
             </div>
 
             {!molette && (
               <p className="cx-hint" aria-hidden="true">
-                <Icon name="mouse" size={14} /> Cliquez sur la carte pour zoomer à la molette
+                <Icon name="mouse" size={14} />{' '}
+                {tr('Cliquez sur la carte pour zoomer à la molette', 'Click the map to zoom with the scroll wheel')}
               </p>
             )}
 
             {!tuilesOk && !offlineVu && (
               <p className="cx-offline" role="status">
-                <Icon name="info" size={14} /> Fond de carte indisponible : contour local affiché.
-                <button type="button" onClick={() => setOfflineVu(true)} aria-label="Masquer">
+                <Icon name="info" size={14} />{' '}
+                {tr('Fond de carte indisponible : contour local affiché.', 'Base map unavailable: showing local outline.')}
+                <button type="button" onClick={() => setOfflineVu(true)} aria-label={tr('Masquer', 'Hide')}>
                   <Icon name="x" size={13} />
                 </button>
               </p>
             )}
 
-            <div className="cx-legend">
+            {histo !== null && (
+              <div className="cx-histo" role="group" aria-label={tr('Chronologie des homologations', 'Validated rides timeline')}>
+                <button
+                  type="button"
+                  className="cx-histo__play"
+                  onClick={() => {
+                    const dernier = chrono.annees[chrono.annees.length - 1]
+                    if (!lecture && histo >= dernier) setHisto(chrono.annees[0])
+                    setLecture((v) => !v)
+                  }}
+                  aria-label={lecture ? tr('Pause', 'Pause') : tr('Lecture', 'Play')}
+                >
+                  <Icon name={lecture ? 'pause' : 'play'} size={18} />
+                </button>
+                <div className="cx-histo__body">
+                  <div className="cx-histo__top">
+                    <b className="cx-histo__an" key={histo}>
+                      {histo}
+                    </b>
+                    <span className="cx-histo__tot">
+                      <Compteur v={chrono.cumul.get(histo)?.total ?? 0} ms={600} />{' '}
+                      {tr('homologations cumulées', 'validated rides so far')}
+                      <em>
+                        {' '}
+                        · +{fmt([...(chrono.cumul.get(histo)?.saison.values() ?? [])].reduce((a, n) => a + n, 0))}{' '}
+                        {tr('cette saison', 'this season')}
+                      </em>
+                    </span>
+                  </div>
+                  <label className="sr-only" htmlFor="cx-histo-an">
+                    {tr('Saison', 'Season')}
+                  </label>
+                  <input
+                    id="cx-histo-an"
+                    type="range"
+                    min={chrono.annees[0]}
+                    max={chrono.annees[chrono.annees.length - 1]}
+                    step={1}
+                    value={histo}
+                    style={{
+                      '--p': `${
+                        ((histo - chrono.annees[0]) /
+                          Math.max(1, chrono.annees[chrono.annees.length - 1] - chrono.annees[0])) *
+                        100
+                      }%`,
+                    }}
+                    onChange={(e) => {
+                      setLecture(false)
+                      const v = Number(e.target.value)
+                      setHisto(chrono.annees.reduce((a, y) => (y <= v ? y : a), chrono.annees[0]))
+                    }}
+                  />
+                  <div className="cx-histo__bornes" aria-hidden="true">
+                    <span>{chrono.annees[0]}</span>
+                    <span>{tr("épaisseur de l'arc = nombre d'homologations", 'arc thickness = number of validated rides')}</span>
+                    <span>{chrono.annees[chrono.annees.length - 1]}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={`cx-legend${histo !== null ? ' is-hidden' : ''}`}>
               {sel ? (
                 <>
                   <span>
-                    <i style={{ background: COULEUR.realisee }} /> Validée
+                    <i style={{ background: COULEUR.realisee }} /> {tr('Validée', 'Validated')}
                   </span>
                   <span>
-                    <i className="is-dash" style={{ borderColor: COULEUR.manquante }} /> À réaliser
+                    <i className="is-dash" style={{ borderColor: COULEUR.manquante }} /> {tr('À réaliser', 'To ride')}
                   </span>
                 </>
               ) : (
@@ -1029,16 +1301,18 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                 ))
               )}
               <span>
-                <i className="is-dot" style={{ background: COULEUR.depart }} /> Départ décalé
+                <i className="is-dot" style={{ background: COULEUR.depart }} /> {tr('Départ décalé', 'Alternative start')}
               </span>
             </div>
           </div>
         </div>
 
         <p className="t-small muted map-note">
-          <Icon name="info" size={13} /> Arcs schématiques Paris → ville d’arrivée ; le sens du parcours
-          reste libre (Paris-Province ou Province-Paris). Survolez une flèche pour la mettre en avant,
-          cliquez pour sa fiche.
+          <Icon name="info" size={13} />{' '}
+          {tr(
+            'Arcs schématiques Paris → ville d’arrivée ; le sens du parcours reste libre (Paris-Province ou Province-Paris). Survolez une flèche pour la mettre en avant, cliquez pour sa fiche.',
+            'Schematic arcs from Paris → finish town; you are free to ride in either direction (Paris to the regions or back). Hover a Flèche to highlight it, click it for its profile.',
+          )}
         </p>
       </div>
 

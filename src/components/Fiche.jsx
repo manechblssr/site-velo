@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Badge from './Badge.jsx'
 import Icon from './Icon.jsx'
-import { makeT } from '../lib/i18n.js'
-import { fmt, fmtDate, downloadCSV } from '../lib/data.js'
+import { makeT, pick, nomClub } from '../lib/i18n.js'
+import { fmt, fmtDate, downloadCSV, nomFormule, nomTranche } from '../lib/data.js'
 
 /* ---------------------------------------------------------------------------
    Fiche palmarès d'un cycliste — tiroir latéral.
@@ -12,21 +12,13 @@ import { fmt, fmtDate, downloadCSV } from '../lib/data.js'
 --------------------------------------------------------------------------- */
 
 const RANG = { O: 3, A: 2, B: 1 }
-const NOM = { O: 'Or', A: 'Argent', B: 'Bronze' }
-const TRANCHE = {
-  a: '65 ans et plus',
-  b: '50 – 65 ans',
-  c: '35 – 50 ans',
-  d: '20 – 35 ans',
-  e: 'moins de 20 ans',
-}
 
-function Anneau({ n, total }) {
+function Anneau({ n, total, L }) {
   const r = 34
   const c = 2 * Math.PI * r
   const pct = Math.min(1, n / total)
   return (
-    <div className="fx-ring" role="img" aria-label={`${n} flèches distinctes sur ${total}`}>
+    <div className="fx-ring" role="img" aria-label={L(`${n} flèches distinctes sur ${total}`, `${n} distinct Flèches out of ${total}`)}>
       <svg viewBox="0 0 80 80" width="88" height="88" aria-hidden="true">
         <circle cx="40" cy="40" r={r} className="fx-ring__bg" />
         <circle
@@ -49,6 +41,8 @@ function Anneau({ n, total }) {
 
 export default function Fiche({ lang, data, participant, manager, onFleche, onClose }) {
   const t = makeT(lang)
+  const L = pick(lang)
+  const NOM = (c) => nomFormule(c, lang)
   const box = useRef(null)
   const retour = useRef(null)
   const [onglet, setOnglet] = useState('fleches')
@@ -130,14 +124,14 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
     downloadCSV(
       `palmares-${p.nom}-${p.prenom}.csv`,
       [
-        { label: 'Date', value: (h) => h.date },
-        { label: "N° d'homologation", value: (h) => h.num },
-        { label: 'Millésime', value: (h) => h.annee },
-        { label: 'Flèche', value: (h) => h.dest },
-        { label: 'Distance (km)', value: (h) => h.km },
-        { label: 'D+ (m)', value: (h) => h.dplus },
-        { label: 'Formule', value: (h) => h.formule },
-        { label: 'Club', value: (h) => h.club },
+        { label: L('Date', 'Date'), value: (h) => h.date },
+        { label: L("N° d'homologation", 'Record no.'), value: (h) => h.num },
+        { label: L('Millésime', 'Season'), value: (h) => h.annee },
+        { label: L('Flèche', 'Flèche'), value: (h) => h.dest },
+        { label: L('Distance (km)', 'Distance (km)'), value: (h) => h.km },
+        { label: L('D+ (m)', 'Elevation gain (m)'), value: (h) => h.dplus },
+        { label: L('Formule', 'Formula'), value: (h) => h.formule },
+        { label: L('Club', 'Club'), value: (h) => h.club },
       ],
       mes,
     )
@@ -172,8 +166,8 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
             <div className="fx-hero__txt">
               <p className="fx-kicker">
                 <Icon name="bike" size={14} />
-                {p.sexe === 'F' ? 'Flécharde' : 'Fléchard'}
-                {p.premiereAnnee ? ` depuis ${p.premiereAnnee}` : ''}
+                {L(p.sexe === 'F' ? 'Flécharde' : 'Fléchard', 'Flèches rider')}
+                {p.premiereAnnee ? L(` depuis ${p.premiereAnnee}`, ` since ${p.premiereAnnee}`) : ''}
               </p>
               <h2 id="fiche-titre" className="fx-nom">
                 {p.prenom} <span>{p.nom}</span>
@@ -181,33 +175,34 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
               <div className="fx-tags">
                 {laComplete && (
                   <span className="fx-tag fx-tag--or">
-                    <Icon name="trophy" size={13} /> La Complète
+                    <Icon name="trophy" size={13} /> {L('La Complète', 'The Complete')}
                   </span>
                 )}
                 {express && (
                   <span className="fx-tag fx-tag--or">
-                    <Icon name="zap" size={13} /> Complète express
+                    <Icon name="zap" size={13} /> {L('Complète express', 'Express Complete')} {express.annee}
                   </span>
                 )}
                 {s.medailles > 0 && (
                   <span className="fx-tag">
-                    <Icon name="award" size={13} /> {s.medailles} médaille{s.medailles > 1 ? 's' : ''}
+                    <Icon name="award" size={13} /> {s.medailles}{' '}
+                    {s.medailles > 1 ? L('médailles', 'medals') : L('médaille', 'medal')}
                   </span>
                 )}
                 {s.nb === 1 && (
                   <span className="fx-tag">
-                    <Icon name="sparkles" size={13} /> Néophyte
+                    <Icon name="sparkles" size={13} /> {L('Néophyte', 'First-timer')}
                   </span>
                 )}
               </div>
             </div>
-            <Anneau n={s.parDest.size} total={fleches.length} />
+            <Anneau n={s.parDest.size} total={fleches.length} L={L} />
           </div>
 
           <ul className="fx-infos">
             <li>
               <Icon name="building" size={15} />
-              <span>{p.club || 'Sans club'}</span>
+              <span>{nomClub(p.club, lang) || t('f.none')}</span>
             </li>
             {(p.ville || p.pays) && (
               <li>
@@ -225,17 +220,45 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                 <span>{[p.fede, p.code].filter(Boolean).join(' · ')}</span>
               </li>
             )}
-            {p.tranche && TRANCHE[p.tranche] && (
+            {p.tranche && nomTranche(p.tranche, lang) && (
               <li>
                 <Icon name="users" size={15} />
-                <span>{TRANCHE[p.tranche]}</span>
+                <span>{nomTranche(p.tranche, lang)}</span>
               </li>
             )}
           </ul>
 
+          {express && (
+            <div className="fx-express">
+              <p className="fx-express__t">
+                <Icon name="zap" size={15} />
+                <b>
+                  {L(
+                    `Complète express — saison ${express.annee}`,
+                    `Express Complete — ${express.annee} season`,
+                  )}
+                </b>
+              </p>
+              <p className="fx-express__d">
+                {L(
+                  `Les 20 Flèches homologuées sur la seule année ${express.annee} (du ${fmtDate(express.saisonDebut)} au ${fmtDate(express.saisonFin)}, année des Flèches selon l'article 3 du règlement)`,
+                  `All 20 Flèches validated within the single ${express.annee} season (${fmtDate(express.saisonDebut)} to ${fmtDate(express.saisonFin)}, the Flèches year under article 3 of the rules)`,
+                )}
+                {express.debut && express.fin
+                  ? L(
+                      ` : première le ${fmtDate(express.debut)}, dernière le ${fmtDate(express.fin)}`,
+                      `: first on ${fmtDate(express.debut)}, last on ${fmtDate(express.fin)}`,
+                    )
+                  : ''}
+                {' · '}
+                {fmt(express.km)} km.
+              </p>
+            </div>
+          )}
+
           <div className="fx-actions">
             <button type="button" className="btn btn--primary btn--sm" onClick={voirCarte}>
-              <Icon name="map" size={15} /> Voir son parcours sur la carte
+              <Icon name="map" size={15} /> {L('Voir son parcours sur la carte', 'See their rides on the map')}
             </button>
             <button type="button" className="btn btn--secondary btn--sm" onClick={exportCSV}>
               <Icon name="download" size={15} /> {t('f.export')}
@@ -248,19 +271,19 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
             <dl className="fx-contacts">
               <div>
                 <dt>
-                  <Icon name="phone" size={14} /> Téléphone
+                  <Icon name="phone" size={14} /> {L('Téléphone', 'Phone')}
                 </dt>
                 <dd>{p.tel || '—'}</dd>
               </div>
               <div>
                 <dt>
-                  <Icon name="home" size={14} /> Adresse
+                  <Icon name="home" size={14} /> {L('Adresse', 'Address')}
                 </dt>
                 <dd>{[p.rue, p.cp, p.ville].filter(Boolean).join(', ') || '—'}</dd>
               </div>
               <div>
                 <dt>
-                  <Icon name="cake" size={14} /> Naissance
+                  <Icon name="cake" size={14} /> {L('Naissance', 'Born')}
                 </dt>
                 <dd>{fmtDate(p.naissance)}</dd>
               </div>
@@ -272,17 +295,17 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
             <div className="fx-kpi">
               <Icon name="medal" size={18} />
               <b>{fmt(s.nb)}</b>
-              <span>homologation{s.nb > 1 ? 's' : ''}</span>
+              <span>{s.nb > 1 ? L('homologations', 'validated rides') : L('homologation', 'validated ride')}</span>
             </div>
             <div className="fx-kpi">
               <Icon name="ruler" size={18} />
               <b>{fmt(s.km)}</b>
-              <span>kilomètres</span>
+              <span>{L('kilomètres', 'kilometres')}</span>
             </div>
             <div className="fx-kpi">
               <Icon name="mountain" size={18} />
               <b>{fmt(s.dplus)}</b>
-              <span>mètres de D+</span>
+              <span>{L('mètres de D+', 'metres climbed')}</span>
             </div>
             <div className="fx-kpi">
               <Icon name="calendar" size={18} />
@@ -292,13 +315,14 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                   : s.annees[0] ?? '—'}
               </b>
               <span>
-                {s.annees.length} saison{s.annees.length > 1 ? 's' : ''}
+                {s.annees.length}{' '}
+                {s.annees.length > 1 ? L('saisons', 'seasons') : L('saison', 'season')}
               </span>
             </div>
           </div>
 
           {/* --------------------------------------------------- formules */}
-          <div className="fx-fo" aria-label="Répartition des formules">
+          <div className="fx-fo" aria-label={L('Répartition des formules', 'Formula breakdown')}>
             {['O', 'A', 'B'].map((c) => (
               <div key={c} className={`fx-fo__row fx-fo__row--${c}`}>
                 <Badge code={c} />
@@ -311,7 +335,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
           </div>
 
           {/* ---------------------------------------------------- onglets */}
-          <div className="fx-tabs" role="tablist" aria-label="Palmarès">
+          <div className="fx-tabs" role="tablist" aria-label={L('Palmarès', 'Record')}>
             <button
               type="button"
               role="tab"
@@ -320,7 +344,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
               aria-controls="fx-panel"
               onClick={() => setOnglet('fleches')}
             >
-              <Icon name="grid" size={15} /> Les 20 Flèches
+              <Icon name="grid" size={15} /> {L('Les 20 Flèches', 'The 20 Flèches')}
               <span className="fx-tabs__n">{s.parDest.size}</span>
             </button>
             <button
@@ -331,7 +355,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
               aria-controls="fx-panel"
               onClick={() => setOnglet('chrono')}
             >
-              <Icon name="history" size={15} /> Chronologie
+              <Icon name="history" size={15} /> {L('Chronologie', 'Timeline')}
               <span className="fx-tabs__n">{s.nb}</span>
             </button>
           </div>
@@ -359,8 +383,11 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                         disabled={!h}
                         title={
                           h
-                            ? `${f.nom} — meilleure formule ${NOM[h.formule] ?? '—'}, ${n} fois`
-                            : `${f.nom} — à réaliser`
+                            ? L(
+                                `${f.nom} — meilleure formule ${NOM(h.formule) ?? '—'}, ${n} fois`,
+                                `${f.nom} — best formula ${NOM(h.formule) ?? '—'}, ${n} time${n > 1 ? 's' : ''}`,
+                              )
+                            : L(`${f.nom} — à réaliser`, `${f.nom} — still to ride`)
                         }
                       >
                         <span className="fx-cell__ico">
@@ -370,7 +397,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                         <span className="fx-cell__meta">
                           {h ? (
                             <>
-                              {NOM[h.formule] ?? '—'} · {h.annee}
+                              {NOM(h.formule) ?? '—'} · {h.annee}
                               {n > 1 && <em>×{n}</em>}
                             </>
                           ) : (
@@ -383,12 +410,15 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                 </div>
                 {manquantes.length > 0 ? (
                   <p className="fx-note">
-                    <Icon name="flag" size={14} /> Encore {manquantes.length} flèche
-                    {manquantes.length > 1 ? 's' : ''} pour La Complète.
+                    <Icon name="flag" size={14} />{' '}
+                    {L(
+                      `Encore ${manquantes.length} flèche${manquantes.length > 1 ? 's' : ''} pour La Complète.`,
+                      `${manquantes.length} more Flèche${manquantes.length > 1 ? 's' : ''} to go for The Complete.`,
+                    )}
                   </p>
                 ) : (
                   <p className="fx-note fx-note--ok">
-                    <Icon name="trophy" size={14} /> Les 20 Flèches sont validées.
+                    <Icon name="trophy" size={14} /> {L('Les 20 Flèches sont validées.', 'All 20 Flèches are validated.')}
                   </p>
                 )}
               </>
@@ -399,7 +429,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                     <p className="fx-year__h">
                       <b>{annee}</b>
                       <span>
-                        {liste.length} flèche{liste.length > 1 ? 's' : ''} ·{' '}
+                        {liste.length} {liste.length > 1 ? L('flèches', 'Flèches') : L('flèche', 'Flèche')} ·{' '}
                         {fmt(liste.reduce((a, h) => a + (h.km || 0), 0))} km
                       </span>
                     </p>
@@ -423,7 +453,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                           </div>
                           <div className="fx-ev__side">
                             <Badge code={h.formule} />
-                            {h.grp ? <span className="fx-ev__grp">groupée</span> : null}
+                            {h.grp ? <span className="fx-ev__grp">{L('groupée', 'group')}</span> : null}
                             <time dateTime={h.date}>{fmtDate(h.date)}</time>
                           </div>
                         </li>
@@ -436,8 +466,11 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
           </div>
 
           <p className="fx-foot">
-            <Icon name="info" size={13} /> Première flèche : {fmtDate(p.premiere)} · dernière
-            participation : {fmtDate(p.derniere)} · base du {fmtDate(meta.build)}.
+            <Icon name="info" size={13} />{' '}
+            {L(
+              `Première flèche : ${fmtDate(p.premiere)} · dernière participation : ${fmtDate(p.derniere)} · base du ${fmtDate(meta.build)}.`,
+              `First Flèche: ${fmtDate(p.premiere)} · last ride: ${fmtDate(p.derniere)} · data as of ${fmtDate(meta.build)}.`,
+            )}
           </p>
         </div>
       </div>

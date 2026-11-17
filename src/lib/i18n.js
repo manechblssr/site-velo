@@ -1,5 +1,8 @@
-/* Libellés d'interface bilingues. Le contenu éditorial officiel de l'ACP
-   reste dans sa rédaction française d'origine, quelle que soit la langue. */
+/* Traduction bilingue de tout le site (interface et contenus éditoriaux).
+   - makeT(lang)(clé) : libellés partagés du dictionnaire ci-dessous ;
+   - useL() → L(fr, en) : texte en ligne, choisi selon la langue courante. */
+
+import { createContext, useContext } from 'react'
 
 export const LANGS = [
   { code: 'fr', nom: 'Français' },
@@ -107,4 +110,37 @@ export function makeT(lang) {
 export function col(t, key, fallback) {
   const v = t(key)
   return v === key ? fallback : v
+}
+
+/* --- Langue courante partagée par tout l'arbre ------------------------- */
+
+export const LangContext = createContext('fr')
+
+export function useLang() {
+  return useContext(LangContext)
+}
+
+/** Choisit entre une version française et anglaise : L('Bonjour', 'Hello'). */
+export function pick(lang) {
+  return (fr, en) => (lang === 'en' && en !== undefined ? en : fr)
+}
+
+export function useL() {
+  return pick(useLang())
+}
+
+/** Libellé de club traduit quand le classeur emploie une mention générique
+   (« Sans licence 77 », « Non licencié 51 », « Membre individuel FFCT »). */
+export function nomClub(club, lang) {
+  if (!club || lang !== 'en') return club
+  return club
+    .replace(/^sans licence\b/i, 'No licence')
+    .replace(/^non licenci[ée]e?(?=\s|$)/i, 'Unlicensed')
+    .replace(/^membre individuel\b/i, 'Individual member')
+    .replace(/\(old\)/i, '(former)')
+}
+
+/** Pluriel simple : plural(n, 'flèche', 'flèches'). */
+export function plural(n, one, many) {
+  return Math.abs(n) > 1 ? many : one
 }

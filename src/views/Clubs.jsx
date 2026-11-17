@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
 import { useData, useRoute } from '../lib/store.jsx'
 import { fmt, fmtKm, norm, downloadCSV } from '../lib/data.js'
+import { useL } from '../lib/i18n.js'
 
 /* ------------------------------------------------------------------ */
 /*  Vue « Clubs & Statistiques » : classement, fiche club, saison       */
@@ -12,16 +13,17 @@ import { fmt, fmtKm, norm, downloadCSV } from '../lib/data.js'
 const PAR_PAGE = 25
 
 const COLS = [
-  { key: 'km', label: 'Km' },
-  { key: 'nb', label: 'Flèches' },
-  { key: 'participants', label: 'Fléchards' },
-  { key: 'O', label: 'Or' },
-  { key: 'A', label: 'Argent' },
-  { key: 'B', label: 'Bronze' },
+  { key: 'km', label: 'Km', en: 'Km' },
+  { key: 'nb', label: 'Flèches', en: 'Flèches' },
+  { key: 'participants', label: 'Fléchards', en: 'Riders' },
+  { key: 'O', label: 'Or', en: 'Gold' },
+  { key: 'A', label: 'Argent', en: 'Silver' },
+  { key: 'B', label: 'Bronze', en: 'Bronze' },
 ]
 
 export default function Clubs() {
   const { data } = useData()
+  const L = useL()
   const [, go] = useRoute()
   const [q, setQ] = useState('')
   const [sortBy, setSortBy] = useState('km')
@@ -75,15 +77,15 @@ export default function Clubs() {
     downloadCSV(
       `clubs-fleches-de-france-${liste.length}.csv`,
       [
-        { label: 'Rang km', value: (c) => c.rangKm },
-        { label: 'Rang flèches', value: (c) => c.rangNb },
+        { label: L('Rang km', 'Km rank'), value: (c) => c.rangKm },
+        { label: L('Rang flèches', 'Flèches rank'), value: (c) => c.rangNb },
         { label: 'Club', value: (c) => c.nom },
-        { label: 'Code club', value: (c) => c.code },
+        { label: L('Code club', 'Club code'), value: (c) => c.code },
         { label: 'Km', value: (c) => c.km },
         { label: 'Flèches', value: (c) => c.nb },
-        { label: 'Fléchards', value: (c) => c.participants },
-        { label: 'Or', value: (c) => c.O },
-        { label: 'Argent', value: (c) => c.A },
+        { label: L('Fléchards', 'Riders'), value: (c) => c.participants },
+        { label: L('Or', 'Gold'), value: (c) => c.O },
+        { label: L('Argent', 'Silver'), value: (c) => c.A },
         { label: 'Bronze', value: (c) => c.B },
       ],
       liste,
@@ -96,30 +98,30 @@ export default function Clubs() {
       <div className="wrap">
         <div className="section-head section-head--row">
           <h1 id="h-clubs" className="t-h2">
-            Clubs & statistiques{' '}
+            {L('Clubs & statistiques', 'Clubs & statistics')}{' '}
             <span className="muted">
-              {fmt(clubs.length)} clubs · {fmt(meta(clubs, 'km'))} km cumulés
+              {fmt(clubs.length)} clubs · {fmt(meta(clubs, 'km'))} {L('km cumulés', 'km in total')}
             </span>
           </h1>
         </div>
 
-        <div className="toolbar" role="search" aria-label="Filtres du classement des clubs">
+        <div className="toolbar" role="search" aria-label={L('Filtres du classement des clubs', 'Club ranking filters')}>
           <div className="toolbar__field toolbar__field--wide">
-            <label htmlFor="cl-q"><Icon name="search" size={13} /> Rechercher un club</label>
+            <label htmlFor="cl-q"><Icon name="search" size={13} /> {L('Rechercher un club', 'Search a club')}</label>
             <input
               id="cl-q"
               type="search"
               value={q}
-              placeholder="Nom du club ou code (FR783635…)"
+              placeholder={L('Nom du club ou code (FR783635…)', 'Club name or code (FR783635…)')}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
           <div className="toolbar__field">
-            <label htmlFor="cl-tri"><Icon name="list" size={13} /> Trier par</label>
+            <label htmlFor="cl-tri"><Icon name="list" size={13} /> {L('Trier par', 'Sort by')}</label>
             <select id="cl-tri" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               {COLS.map((c) => (
                 <option key={c.key} value={c.key}>
-                  {c.label}
+                  {L(c.label, c.en)}
                 </option>
               ))}
             </select>
@@ -129,25 +131,31 @@ export default function Clubs() {
               <b>{fmt(liste.length)}</b> clubs
             </span>
             <button type="button" className="btn btn--secondary btn--sm" onClick={exporter}>
-              <Icon name="download" size={15} /> Exporter en CSV
+              <Icon name="download" size={15} /> {L('Exporter en CSV', 'Export CSV')}
             </button>
           </div>
         </div>
 
         <div className="result-line">
           <span>
-            Classement par <strong>{COLS.find((c) => c.key === sortBy)?.label.toLowerCase()}</strong> —
-            cliquez sur un club pour ouvrir sa fiche.
+            {L('Classement par ', 'Ranked by ')}
+            <strong>
+              {(() => {
+                const c = COLS.find((x) => x.key === sortBy)
+                return c ? L(c.label, c.en).toLowerCase() : ''
+              })()}
+            </strong>
+            {L(' — cliquez sur un club pour ouvrir sa fiche.', ' — click a club to open its profile.')}
           </span>
         </div>
 
         <div className="table-scroll">
           <table className="table-app">
-            <caption className="sr-only">Classement des clubs des Flèches de France</caption>
+            <caption className="sr-only">{L('Classement des clubs des Flèches de France', 'Flèches de France club ranking')}</caption>
             <thead>
               <tr>
                 <th scope="col" className="num">
-                  Rang
+                  {L('Rang', 'Rank')}
                 </th>
                 <th scope="col">Club</th>
                 <th scope="col">Code</th>
@@ -158,13 +166,13 @@ export default function Clubs() {
                   Flèches
                 </th>
                 <th scope="col" className="num">
-                  Fléchards
+                  {L('Fléchards', 'Riders')}
                 </th>
                 <th scope="col" className="num">
-                  Or
+                  {L('Or', 'Gold')}
                 </th>
                 <th scope="col" className="num">
-                  Argent
+                  {L('Argent', 'Silver')}
                 </th>
                 <th scope="col" className="num">
                   Bronze
@@ -197,7 +205,7 @@ export default function Clubs() {
               {liste.length === 0 && (
                 <tr>
                   <td colSpan={9} className="empty">
-                    Aucun club ne correspond à « {q} ».
+                    {L(`Aucun club ne correspond à « ${q} ».`, `No club matches “${q}”.`)}
                   </td>
                 </tr>
               )}
@@ -206,14 +214,14 @@ export default function Clubs() {
         </div>
 
         {pages > 1 && (
-          <nav className="pager" aria-label="Pagination du classement des clubs">
+          <nav className="pager" aria-label={L('Pagination du classement des clubs', 'Club ranking pagination')}>
             <button
               type="button"
               className="btn btn--secondary btn--sm"
               disabled={pageSure === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              <Icon name="chevron-left" size={15} /> Précédent
+              <Icon name="chevron-left" size={15} /> {L('Précédent', 'Previous')}
             </button>
             <span className="muted">
               Page {pageSure} / {pages}
@@ -224,52 +232,52 @@ export default function Clubs() {
               disabled={pageSure === pages}
               onClick={() => setPage((p) => Math.min(pages, p + 1))}
             >
-              Suivant <Icon name="chevron-right" size={15} />
+              {L('Suivant', 'Next')} <Icon name="chevron-right" size={15} />
             </button>
           </nav>
         )}
 
         {club && (
-          <FicheClub club={club} parClub={parClub} onClose={() => setOuvert(null)} onGo={go} />
+          <FicheClub club={club} parClub={parClub} onClose={() => setOuvert(null)} onGo={go} L={L} />
         )}
 
         {/* --------------------------------------------- statistiques annuelles */}
         <div className="section-head section-head--row">
-          <h2 className="t-h2">Évolution annuelle</h2>
+          <h2 className="t-h2">{L('Évolution annuelle', 'Year by year')}</h2>
           <p className="result-line">
-            <strong>{annees.length}</strong> saisons de 1997 à 2026
+            <strong>{annees.length}</strong> {L('saisons de 1997 à 2026', 'seasons from 1997 to 2026')}
           </p>
         </div>
 
         <div className="table-scroll">
           <table className="table-app">
-            <caption className="sr-only">Statistiques annuelles des Flèches de France</caption>
+            <caption className="sr-only">{L('Statistiques annuelles des Flèches de France', 'Flèches de France yearly statistics')}</caption>
             <thead>
               <tr>
-                <th scope="col">Année</th>
+                <th scope="col">{L('Année', 'Year')}</th>
                 <th scope="col" className="num">
-                  Homologations
+                  {L('Homologations', 'Validated rides')}
                 </th>
                 <th scope="col" className="num">
-                  Fléchards
+                  {L('Fléchards', 'Riders')}
                 </th>
                 <th scope="col" className="num">
-                  Nouveaux
+                  {L('Nouveaux', 'Newcomers')}
                 </th>
                 <th scope="col" className="num">
-                  Femmes
+                  {L('Femmes', 'Women')}
                 </th>
                 <th scope="col" className="num">
-                  Hommes
+                  {L('Hommes', 'Men')}
                 </th>
                 <th scope="col" className="num">
                   Km
                 </th>
                 <th scope="col" className="num">
-                  Or
+                  {L('Or', 'Gold')}
                 </th>
                 <th scope="col" className="num">
-                  Argent
+                  {L('Argent', 'Silver')}
                 </th>
                 <th scope="col" className="num">
                   Bronze
@@ -297,13 +305,13 @@ export default function Clubs() {
 
         {/* --------------------------------------------------------- records */}
         <div className="section-head">
-          <h2 className="t-h2">Têtes de classement</h2>
+          <h2 className="t-h2">{L('Têtes de classement', 'Top of the table')}</h2>
         </div>
         <div className="kpis kpis--records">
           {[
-            ['Plus gros cumul de km', records.km, (v) => fmtKm(v)],
-            ['Plus de flèches homologuées', records.nb, (v) => fmt(v)],
-            ['Plus de dévoilés', records.participants, (v) => fmt(v)],
+            [L('Plus gros cumul de km', 'Most kilometres'), records.km, (v) => fmtKm(v)],
+            [L('Plus de flèches homologuées', 'Most validated Flèches'), records.nb, (v) => fmt(v)],
+            [L('Plus de fléchards', 'Most riders'), records.participants, (v) => fmt(v)],
           ].map(([titre, top, format]) => (
             <div className="kpi" key={titre}>
               <b className="kpi__l">{titre}</b>
@@ -330,7 +338,7 @@ function meta(clubs, key) {
 
 /* ------------------------------------------------------------------ */
 
-function FicheClub({ club, parClub, onClose, onGo }) {
+function FicheClub({ club, parClub, onClose, onGo, L }) {
   const membres = useMemo(
     () =>
       (parClub.get(norm(club.nom)) ?? [])
@@ -355,50 +363,50 @@ function FicheClub({ club, parClub, onClose, onGo }) {
   }, [club])
 
   return (
-    <section className="fiche-club" aria-label={`Fiche du club ${club.nom}`}>
+    <section className="fiche-club" aria-label={L(`Fiche du club ${club.nom}`, `Club profile: ${club.nom}`)}>
       <div className="section-head section-head--row">
         <h3 className="t-h3">
           {club.nom} <span className="muted">code {club.code || '—'}</span>
         </h3>
         <button type="button" className="btn btn--secondary btn--sm" onClick={onClose}>
-          Fermer la fiche
+          {L('Fermer la fiche', 'Close profile')}
         </button>
       </div>
 
       <div className="kpis">
         <div className="kpi">
           <b className="kpi__v">{fmt(club.km)}</b>
-          <span className="kpi__l">Kilomètres cumulés</span>
+          <span className="kpi__l">{L('Kilomètres cumulés', 'Total kilometres')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{fmt(club.nb)}</b>
-          <span className="kpi__l">Flèches homologuées</span>
+          <span className="kpi__l">{L('Flèches homologuées', 'Validated Flèches')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{fmt(club.participants)}</b>
-          <span className="kpi__l">Fléchards du club</span>
+          <span className="kpi__l">{L('Fléchards du club', 'Club riders')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">
             {fmt(club.O)} · {fmt(club.A)} · {fmt(club.B)}
           </b>
-          <span className="kpi__l">Or · Argent · Bronze</span>
+          <span className="kpi__l">{L('Or · Argent · Bronze', 'Gold · Silver · Bronze')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">#{club.rangKm}</b>
-          <span className="kpi__l">Rang km (#{club.rangNb} flèches)</span>
+          <span className="kpi__l">{L(`Rang km (#${club.rangNb} flèches)`, `Km rank (#${club.rangNb} by Flèches)`)}</span>
         </div>
       </div>
 
       <div className="split-pair">
         <div>
-          <h3 className="t-h3 fiche-h">Flèches par saison</h3>
+          <h3 className="t-h3 fiche-h">{L('Flèches par saison', 'Flèches per season')}</h3>
           <div className="table-scroll table-scroll--short">
             <table className="table-app">
-              <caption className="sr-only">Flèches du club par saison</caption>
+              <caption className="sr-only">{L('Flèches du club par saison', 'Club Flèches per season')}</caption>
               <thead>
                 <tr>
-                  <th scope="col">Année</th>
+                  <th scope="col">{L('Année', 'Year')}</th>
                   <th scope="col" className="num">
                     Flèches
                   </th>
@@ -421,9 +429,9 @@ function FicheClub({ club, parClub, onClose, onGo }) {
         </div>
 
         <div>
-          <h3 className="t-h3 fiche-h">Meilleurs dévoilés</h3>
+          <h3 className="t-h3 fiche-h">{L('Meilleurs fléchards', 'Top riders')}</h3>
           {membres.length === 0 ? (
-            <p className="muted">Aucun dévoilé rattaché à ce club dans l'annuaire.</p>
+            <p className="muted">{L("Aucun fléchard rattaché à ce club dans l'annuaire.", 'No rider linked to this club in the directory.')}</p>
           ) : (
             <div className="rows-app">
               {membres.map((p) => (
@@ -442,8 +450,8 @@ function FicheClub({ club, parClub, onClose, onGo }) {
                     <span className="row-app__meta">{p.ville || '—'}</span>
                   </span>
                   <span className="row-app__meta">
-                    {fmt(p.nb)} flèches · {fmt(p.km)} km · O {fmt(p.O)} · A {fmt(p.A)} · B{' '}
-                    {fmt(p.B)}
+                    {fmt(p.nb)} {L('flèches', 'Flèches')} · {fmt(p.km)} km · {L('O', 'G')} {fmt(p.O)} · {L('A', 'S')}{' '}
+                    {fmt(p.A)} · B {fmt(p.B)}
                   </span>
                 </div>
               ))}
@@ -451,7 +459,10 @@ function FicheClub({ club, parClub, onClose, onGo }) {
           )}
           {membres.length === 40 && (
             <p className="t-small muted">
-              40 premiers dévoilés affichés — ouvrez l'annuaire pour la liste complète.
+              {L(
+                "40 premiers fléchards affichés — ouvrez l'annuaire pour la liste complète.",
+                'Top 40 riders shown — open the directory for the full list.',
+              )}
             </p>
           )}
         </div>

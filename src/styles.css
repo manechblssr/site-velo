@@ -3512,6 +3512,27 @@ main > .hero {
 .fx-infos .icon {
   color: #9cc6ff;
 }
+/* encart Complète express : saison et dates réelles du défi */
+.fx-express {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgb(244 220 148 / 0.14);
+  border: 1px solid rgb(244 220 148 / 0.45);
+}
+.fx-express__t {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #f4dc94;
+}
+.fx-express__d {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.9);
+}
 .fx-actions {
   display: flex;
   flex-wrap: wrap;
@@ -4765,4 +4786,252 @@ main > .hero {
 }
 .map-note .icon {
   display: inline-block;
+}
+
+/* =========================================================================
+   Carte animée : flux le long des arcs, apparition des repères,
+   chronologie « Rejouer l'histoire »
+   ========================================================================= */
+
+/* impulsions lumineuses qui filent de Paris vers la ville d'arrivée */
+.fl-flux {
+  stroke-dasharray: 0.045 0.955;
+  stroke-dashoffset: 0.045;
+  opacity: 0;
+  filter: drop-shadow(0 0 2px rgb(255 255 255 / 0.9));
+  animation:
+    fl-flux var(--dur, 3s) linear var(--d, 1s) infinite,
+    fl-flux-in 400ms ease-out var(--d, 1s) forwards;
+  transition: opacity 200ms var(--ease);
+  pointer-events: none;
+}
+@keyframes fl-flux {
+  from {
+    stroke-dashoffset: 0.045;
+  }
+  to {
+    stroke-dashoffset: -0.955;
+  }
+}
+@keyframes fl-flux-in {
+  to {
+    opacity: 0.9;
+  }
+}
+.has-focus .fl-flux:not(.is-focus) {
+  visibility: hidden;
+}
+.fl-flux.is-focus {
+  stroke-width: 4.5px;
+  animation-duration: calc(var(--dur, 3s) * 0.6), 400ms;
+}
+.is-histo .fl-flux,
+.is-calme .fl-flux {
+  visibility: hidden;
+}
+
+/* arcs : transition douce de l'épaisseur pendant la chronologie */
+.is-histo .fl-trace {
+  transition:
+    stroke-width 600ms var(--ease),
+    opacity 600ms var(--ease);
+}
+
+/* repères : apparition en cascade après le tracé des arcs */
+.fl-pin--anime {
+  animation: fl-pin-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 700ms) backwards;
+}
+@keyframes fl-pin-pop {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+.fl-pin__lbl--anime {
+  animation: fl-lbl-in 420ms var(--ease) calc(var(--d, 0ms) + 900ms) backwards;
+}
+@keyframes fl-lbl-in {
+  from {
+    opacity: 0;
+    transform: translate(-6px, -50%);
+  }
+}
+
+/* onde quand une flèche reçoit de nouvelles homologations dans la saison */
+.fl-pin {
+  position: relative;
+}
+.fl-pin--ping::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  animation: fl-ping 900ms ease-out;
+  pointer-events: none;
+}
+@keyframes fl-ping {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* bouton mis en avant dans les outils */
+.cx-tool--accent {
+  color: var(--action-ink);
+  background: var(--action);
+  border-color: var(--action);
+}
+.cx-tool--accent:hover {
+  color: var(--action-ink);
+  filter: brightness(1.08);
+}
+.cx-tool--accent[aria-pressed='true'] {
+  color: var(--ink);
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
+  border-color: var(--line);
+}
+
+.num-tab {
+  font-variant-numeric: tabular-nums;
+}
+
+/* panneau de chronologie */
+.cx-histo {
+  position: absolute;
+  left: 12px;
+  right: 60px;
+  bottom: 12px;
+  z-index: 650;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 620px;
+  padding: 10px 16px 10px 10px;
+  color: var(--ink);
+  background: color-mix(in oklab, var(--bg) 94%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px -16px rgb(14 19 25 / 0.55);
+  backdrop-filter: blur(8px);
+  animation: cx-histo-in 360ms var(--ease) both;
+}
+@keyframes cx-histo-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.cx-histo__play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--action-ink);
+  background: var(--action);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 160ms var(--ease);
+}
+.cx-histo__play:hover {
+  transform: scale(1.06);
+}
+.cx-histo__play:active {
+  transform: scale(0.96);
+}
+.cx-histo__body {
+  flex: 1;
+  min-width: 0;
+}
+.cx-histo__top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cx-histo__an {
+  font-size: 26px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  animation: cx-an 380ms var(--ease);
+}
+@keyframes cx-an {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.cx-histo__tot {
+  font-size: 13px;
+}
+.cx-histo__tot em {
+  font-style: normal;
+  color: var(--muted);
+}
+.cx-histo input[type='range'] {
+  width: 100%;
+  margin: 6px 0 2px;
+  height: 6px;
+  appearance: none;
+  background: linear-gradient(to right, var(--action) var(--p, 0%), var(--line) var(--p, 0%));
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cx-histo input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 3px solid var(--action);
+  border-radius: 50%;
+}
+.cx-histo input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 3px solid var(--action);
+  border-radius: 50%;
+}
+.cx-histo__bornes {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.cx-legend.is-hidden {
+  display: none;
+}
+@media (max-width: 640px) {
+  .cx-histo {
+    right: 12px;
+    gap: 10px;
+  }
+  .cx-histo__bornes span:nth-child(2) {
+    display: none;
+  }
+  .cx-histo__an {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* le flux reste (interrupteur « Animation » sur la carte), mais plus lent */
+  .fl-flux {
+    animation-duration: calc(var(--dur, 3s) * 1.6), 400ms;
+  }
+  .fl-pin--anime,
+  .fl-pin__lbl--anime,
+  .fl-pin--ping::after,
+  .cx-histo,
+  .cx-histo__an {
+    animation: none;
+  }
 }

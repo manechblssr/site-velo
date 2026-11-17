@@ -1,18 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import Badge from '../components/Badge.jsx'
 import Icon from '../components/Icon.jsx'
-import { makeT } from '../lib/i18n.js'
+import { makeT, useL, useLang, nomClub } from '../lib/i18n.js'
 import { fmt, fmtDate, norm, downloadCSV } from '../lib/data.js'
 
 const ONGLETS = [
-  ['formules', 'Par formule', 'medal'],
-  ['pionnier', 'Le pionnier', 'flag'],
-  ['complete', 'La Complète', 'trophy'],
-  ['express', 'La Complète express', 'zap'],
-  ['combiné', 'Le combiné', 'layers'],
+  ['formules', 'Par formule', 'By formula', 'medal'],
+  ['pionnier', 'Le pionnier', 'The pioneer', 'flag'],
+  ['complete', 'La Complète', 'The Complete', 'trophy'],
+  ['express', 'La Complète express', 'The Express Complete', 'zap'],
+  ['combiné', 'Le combiné', 'The combined', 'layers'],
 ]
-
-const NOMF = { O: 'Or', A: 'Argent', B: 'Bronze' }
 
 /* Même cadence que l'annuaire et le classement des clubs : la liste des
    homologations se lit par pages, l'export CSV, lui, reste complet. */
@@ -20,6 +18,7 @@ const PAR_PAGE = 25
 
 export default function Defis({ lang, data }) {
   const t = makeT(lang)
+  const L = useL()
   const { defis, fleches, homologations, stats, participants } = data
   const [onglet, setOnglet] = useState('formules')
 
@@ -29,12 +28,14 @@ export default function Defis({ lang, data }) {
         <div className="section-head">
           <h1 id="h-defis" className="t-h2">
             {t('view.defis')}{' '}
-            <span className="muted">formules homologuées, pionniers et grands défis</span>
+            <span className="muted">
+              {L('formules homologuées, pionniers et grands défis', 'validated formulas, pioneers and great challenges')}
+            </span>
           </h1>
         </div>
 
-        <div className="tabs-app" role="tablist" aria-label="Défis et formules">
-          {ONGLETS.map(([id, label, ico]) => (
+        <div className="tabs-app" role="tablist" aria-label={L('Défis et formules', 'Challenges and formulas')}>
+          {ONGLETS.map(([id, label, en, ico]) => (
             <button
               key={id}
               type="button"
@@ -45,7 +46,7 @@ export default function Defis({ lang, data }) {
               className="tab-app"
               onClick={() => setOnglet(id)}
             >
-              <Icon name={ico} size={15} /> {label}
+              <Icon name={ico} size={15} /> {L(label, en)}
             </button>
           ))}
         </div>
@@ -55,13 +56,13 @@ export default function Defis({ lang, data }) {
             <ParFormule homologations={homologations} fleches={fleches} lang={lang} />
           )}
           {onglet === 'pionnier' && (
-            <Pionnier defis={defis} fleches={fleches} homologations={homologations} />
+            <Pionnier fleches={fleches} homologations={homologations} participants={participants} />
           )}
           {onglet === 'complete' && (
             <Complete defis={defis} stats={stats} participants={participants} lang={lang} />
           )}
           {onglet === 'express' && <Express defis={defis} />}
-          {onglet === 'combiné' && <Combiné />}
+          {onglet === 'combiné' && <Combine />}
         </div>
       </div>
     </section>
@@ -72,6 +73,7 @@ export default function Defis({ lang, data }) {
 
 function ParFormule({ homologations, fleches, lang }) {
   const t = makeT(lang)
+  const L = useL()
   const [formule, setFormule] = useState('O')
   const [fleche, setFleche] = useState('')
   const [q, setQ] = useState('')
@@ -96,25 +98,25 @@ function ParFormule({ homologations, fleches, lang }) {
     downloadCSV(
       `formule-${formule}${fleche ? `-${fleche}` : ''}.csv`,
       [
-        { label: 'Date', value: (h) => h.date },
-        { label: 'Millésime', value: (h) => h.annee },
-        { label: "N° d'homologation", value: (h) => h.num },
-        { label: 'Flèche', value: (h) => h.dest },
-        { label: 'Formule', value: (h) => h.formule },
-        { label: 'Club', value: (h) => h.club },
-        { label: 'Fédération', value: (h) => h.fede },
+        { label: L('Date', 'Date'), value: (h) => h.date },
+        { label: L('Millésime', 'Season'), value: (h) => h.annee },
+        { label: L("N° d'homologation", 'Record no.'), value: (h) => h.num },
+        { label: L('Flèche', 'Flèche'), value: (h) => h.dest },
+        { label: L('Formule', 'Formula'), value: (h) => h.formule },
+        { label: L('Club', 'Club'), value: (h) => h.club },
+        { label: L('Fédération', 'Federation'), value: (h) => h.fede },
       ],
       lignes,
     )
 
   return (
     <>
-      <div className="toolbar" role="group" aria-label="Filtres de formule">
+      <div className="toolbar" role="group" aria-label={L('Filtres de formule', 'Formula filters')}>
         <div className="toolbar__field">
-          <label htmlFor="pf-formule"><Icon name="medal" size={13} /> Formule</label>
+          <label htmlFor="pf-formule"><Icon name="medal" size={13} /> {t('f.formule')}</label>
           <select id="pf-formule" value={formule} onChange={(e) => setFormule(e.target.value)}>
-            <option value="O">Or</option>
-            <option value="A">Argent</option>
+            <option value="O">{L('Or', 'Gold')}</option>
+            <option value="A">{L('Argent', 'Silver')}</option>
             <option value="B">Bronze</option>
           </select>
         </div>
@@ -130,18 +132,18 @@ function ParFormule({ homologations, fleches, lang }) {
           </select>
         </div>
         <div className="toolbar__field toolbar__field--wide">
-          <label htmlFor="pf-q"><Icon name="search" size={13} /> Rechercher</label>
+          <label htmlFor="pf-q"><Icon name="search" size={13} /> {t('nav.search')}</label>
           <input
             id="pf-q"
             type="search"
             value={q}
-            placeholder="Club, n° d'homologation…"
+            placeholder={L("Club, n° d'homologation…", 'Club, record no.…')}
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
         <div className="toolbar__field toolbar__field--action">
           <span className="toolbar__count">
-            <b>{fmt(lignes.length)}</b> homologations
+            <b>{fmt(lignes.length)}</b> {L('homologations', 'validated rides')}
           </span>
           <button type="button" className="btn btn--secondary btn--sm" onClick={exportCSV}>
             <Icon name="download" size={15} /> {t('f.export')}
@@ -182,17 +184,20 @@ function ParFormule({ homologations, fleches, lang }) {
         </table>
       </div>
       {pages > 1 && (
-        <nav className="pager" aria-label="Pagination des homologations">
+        <nav className="pager" aria-label={L('Pagination des homologations', 'Validated rides pagination')}>
           <button
             type="button"
             className="btn btn--secondary btn--sm"
             disabled={pageSure === 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
-            <Icon name="chevron-left" size={15} /> Précédent
+            <Icon name="chevron-left" size={15} /> {L('Précédent', 'Previous')}
           </button>
           <span className="muted">
-            Page {pageSure} / {pages} — {fmt(lignes.length)} homologations au total
+            {L(
+              `Page ${pageSure} / ${pages} — ${fmt(lignes.length)} homologations au total`,
+              `Page ${pageSure} / ${pages} — ${fmt(lignes.length)} validated rides in total`,
+            )}
           </span>
           <button
             type="button"
@@ -200,7 +205,7 @@ function ParFormule({ homologations, fleches, lang }) {
             disabled={pageSure === pages}
             onClick={() => setPage((p) => Math.min(pages, p + 1))}
           >
-            Suivant <Icon name="chevron-right" size={15} />
+            {L('Suivant', 'Next')} <Icon name="chevron-right" size={15} />
           </button>
         </nav>
       )}
@@ -210,108 +215,190 @@ function ParFormule({ homologations, fleches, lang }) {
 
 /* ------------------------------------------------------------------ pionnier */
 
-function Pionnier({ defis, fleches, homologations }) {
-  const { pioneer, vierges } = defis
+/* Le pionnier d'un duo Flèche × Formule est le premier à l'avoir réalisé :
+   on classe les homologations par date de réalisation (puis n°
+   d'homologation à date égale), et non par millésime. Les éditions
+   anciennes n'ont que l'année : leur date est ramenée au 1er janvier. */
+function datePionnier(h) {
+  return h.date || `${h.annee}-12-31`
+}
+
+function plusTot(a, b) {
+  const da = datePionnier(a)
+  const db = datePionnier(b)
+  if (da !== db) return da < db
+  return (a.num ?? Infinity) < (b.num ?? Infinity)
+}
+
+/** Date lisible : l'année seule quand le classeur n'a que l'année. */
+function dateCourte(iso) {
+  if (!iso) return '—'
+  return iso.endsWith('-01-01') ? iso.slice(0, 4) : fmtDate(iso)
+}
+
+const VIERGES = [
+  ['BRIANCON', 'O'],
+  ['HENDAYE', 'O'],
+  ['LUCHON', 'O'],
+  ['MARSEILLE', 'O'],
+  ['MARSEILLE', 'A'],
+]
+
+function Pionnier({ fleches, homologations, participants }) {
+  const L = useL()
+  const lang = useLang()
+
+  const byId = useMemo(() => new Map(participants.map((p) => [p.id, p])), [participants])
+
+  /* premier lauréat de chaque duo, recalculé sur tout le journal */
+  const pioneer = useMemo(() => {
+    const m = new Map()
+    for (const h of homologations) {
+      if (!['O', 'A', 'B'].includes(h.formule)) continue
+      const k = `${h.dest}|${h.formule}`
+      const cur = m.get(k)
+      if (!cur || plusTot(h, cur)) m.set(k, h)
+    }
+    return m
+  }, [homologations])
+
+  const vierges = useMemo(
+    () =>
+      VIERGES.map(([dest, fo]) => {
+        const rows = homologations.filter((h) => h.dest === dest && h.formule === fo)
+        return {
+          dest,
+          formule: fo,
+          vierge: !rows.some((h) => h.annee >= 1997 && h.annee <= 2025),
+          premier: pioneer.get(`${dest}|${fo}`) ?? null,
+          apres2025: rows.filter((h) => h.annee > 2025).length,
+        }
+      }),
+    [homologations, pioneer],
+  )
 
   const totalAvant = useMemo(
     () => homologations.filter((h) => h.annee >= 1997 && h.annee <= 2025).length,
     [homologations],
   )
 
+  const nomFleche = (id) => fleches.find((f) => f.id === id)?.nom ?? id
+
+  const Laureat = ({ h }) => {
+    const p = byId.get(h.pid)
+    const nom = p ? `${p.nom} ${p.prenom}` : '—'
+    return (
+      <>
+        {p ? (
+          <a className="link" href={`#/annuaire/pid=${p.id}`}>
+            <b>{nom}</b>
+          </a>
+        ) : (
+          <b>{nom}</b>
+        )}{' '}
+        <span className="muted">
+          {dateCourte(h.date)}
+          {h.num != null ? ` · ${L('n°', 'no.')} ${h.num}` : ''}
+          {h.club ? ` · ${nomClub(h.club, lang)}` : ''}
+        </span>
+      </>
+    )
+  }
+
   return (
     <>
       <div className="kpis">
         <div className="kpi">
           <b className="kpi__v">{fmt(totalAvant)}</b>
-          <span className="kpi__l">Flèches homologuées entre 1997 et 2025</span>
+          <span className="kpi__l">{L('Flèches homologuées entre 1997 et 2025', 'Flèches validated between 1997 and 2025')}</span>
         </div>
         <div className="kpi">
-          <b className="kpi__v">{vierges.filter((v) => v.vierge1997_2025).length}</b>
-          <span className="kpi__l">Formules vierges sur la période</span>
+          <b className="kpi__v">{vierges.filter((v) => v.vierge).length}</b>
+          <span className="kpi__l">{L('Formules vierges sur la période', 'Formulas never achieved in that period')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{fleches.length * 3}</b>
-          <span className="kpi__l">Duos flèche × formule suivis</span>
+          <span className="kpi__l">{L('Duos flèche × formule suivis', 'Flèche × formula pairs tracked')}</span>
         </div>
       </div>
 
-      <h3 className="t-h3 fiche-h">Les 5 formules réputées vierges (1997 → 2025)</h3>
+      <h3 className="t-h3 fiche-h">
+        {L('Les 5 formules réputées vierges (1997 → 2025)', 'The 5 formulas reported as never achieved (1997 → 2025)')}
+      </h3>
       <div className="table-scroll">
         <table className="table-app">
           <thead>
             <tr>
-              <th scope="col">Flèche</th>
-              <th scope="col">Formule</th>
-              <th scope="col">Vierge 1997-2025</th>
-              <th scope="col">Premier lauréat</th>
+              <th scope="col">{L('Flèche', 'Flèche')}</th>
+              <th scope="col">{L('Formule', 'Formula')}</th>
+              <th scope="col">{L('Vierge 1997-2025', 'Unachieved 1997-2025')}</th>
+              <th scope="col">{L('Premier lauréat', 'First achiever')}</th>
               <th scope="col" className="num">
-                Homologations après 2025
+                {L('Homologations après 2025', 'Validated rides after 2025')}
               </th>
             </tr>
           </thead>
           <tbody>
             {vierges.map((v) => (
-              <tr key={`${v['flèche']}-${v.formule}`}>
-                <th scope="row">{v['flèche']}</th>
+              <tr key={`${v.dest}-${v.formule}`}>
+                <th scope="row">{nomFleche(v.dest)}</th>
                 <td>
                   <Badge code={v.formule} />
                 </td>
-                <td>{v.vierge1997_2025 ? <span className="chip">vierge</span> : <span className="chip chip--actif">attribuée</span>}</td>
-                <td>{v.premier ? `${v.premier.nom} (${v.premier.annee})` : '—'}</td>
-                <td className="num">{v.apres2025 ?? 0}</td>
+                <td>
+                  {v.vierge ? (
+                    <span className="chip">{L('vierge', 'unachieved')}</span>
+                  ) : (
+                    <span className="chip chip--actif">{L('attribuée', 'achieved')}</span>
+                  )}
+                </td>
+                <td>{v.premier ? <Laureat h={v.premier} /> : '—'}</td>
+                <td className="num">{v.apres2025}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <h3 className="t-h3 fiche-h">Premier lauréat de chaque duo flèche × formule</h3>
+      <h3 className="t-h3 fiche-h">{L('Premier lauréat de chaque duo flèche × formule', 'First achiever of each Flèche × formula pair')}</h3>
       <div className="table-scroll">
         <table className="table-app">
           <thead>
             <tr>
-              <th scope="col">Flèche</th>
+              <th scope="col">{L('Flèche', 'Flèche')}</th>
               <th scope="col">
-                <Badge code="O" /> Or
+                <Badge code="O" />
               </th>
               <th scope="col">
-                <Badge code="A" /> Argent
+                <Badge code="A" />
               </th>
               <th scope="col">
-                <Badge code="B" /> Bronze
+                <Badge code="B" />
               </th>
             </tr>
           </thead>
           <tbody>
-            {fleches.map((f) => {
-              const cell = pioneer[f.id] || {}
-              return (
-                <tr key={f.id}>
-                  <th scope="row">{f.nom}</th>
-                  {['O', 'A', 'B'].map((fo) => (
+            {fleches.map((f) => (
+              <tr key={f.id}>
+                <th scope="row">{f.nom}</th>
+                {['O', 'A', 'B'].map((fo) => {
+                  const h = pioneer.get(`${f.id}|${fo}`)
+                  return (
                     <td key={fo}>
-                      {cell[fo] ? (
-                        <>
-                          <b>{cell[fo].nom}</b>{' '}
-                          <span className="muted">
-                            {cell[fo].annee}
-                            {cell[fo].club ? ` · ${cell[fo].club}` : ''}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="muted">aucun</span>
-                      )}
+                      {h ? <Laureat h={h} /> : <span className="muted">{L('aucun', 'none')}</span>}
                     </td>
-                  ))}
-                </tr>
-              )
-            })}
+                  )
+                })}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
       <p className="t-small muted">
-        Le pionnier est le premier participant homologué dans la base pour chaque combinaison.
-        Une formule « aucune » n'a jamais été attribuée depuis l'ouverture des Flèches.
+        {L(
+          "Le pionnier est le premier participant à avoir réalisé la combinaison, d'après la date de réalisation (à date égale, le plus petit n° d'homologation). Pour les éditions anciennes, seule l'année est connue. « aucun » : formule jamais attribuée depuis l'ouverture des Flèches.",
+          'The pioneer is the first rider to have completed the combination, based on the ride date (same date: lowest record number). For older editions only the year is known. “none”: formula never achieved since the Flèches began.',
+        )}
       </p>
     </>
   )
@@ -321,6 +408,7 @@ function Pionnier({ defis, fleches, homologations }) {
 
 function Complete({ defis, stats, participants, lang }) {
   const t = makeT(lang)
+  const L = useL()
   const [sexe, setSexe] = useState('')
   const [q, setQ] = useState('')
 
@@ -354,41 +442,44 @@ function Complete({ defis, stats, participants, lang }) {
     downloadCSV(
       'la-complete.csv',
       [
-        { label: 'Nom', value: (c) => c.nom },
-        { label: 'Sexe', value: (c) => c.sexe },
-        { label: 'Club', value: (c) => c.club },
-        { label: 'Flèches', value: (c) => c.nb },
-        { label: 'Première', value: (c) => c.premiere },
-        { label: 'Dernière', value: (c) => c.derniere },
-        { label: 'Onglet « 20 flèches »', value: (c) => (officiels.has(c.nom) ? 'oui' : 'non') },
+        { label: L('Nom', 'Name'), value: (c) => c.nom },
+        { label: L('Sexe', 'Gender'), value: (c) => c.sexe },
+        { label: L('Club', 'Club'), value: (c) => c.club },
+        { label: L('Flèches', 'Flèches'), value: (c) => c.nb },
+        { label: L('Première', 'First'), value: (c) => c.premiere },
+        { label: L('Dernière', 'Last'), value: (c) => c.derniere },
+        {
+          label: L('Onglet « 20 flèches »', '“20 Flèches” sheet'),
+          value: (c) => (officiels.has(c.nom) ? L('oui', 'yes') : L('non', 'no')),
+        },
       ],
       liste,
     )
 
   return (
     <>
-      <div className="toolbar" role="group" aria-label="Filtres de La Complète">
+      <div className="toolbar" role="group" aria-label={L('Filtres de La Complète', 'The Complete filters')}>
         <div className="toolbar__field">
           <label htmlFor="cp-sexe"><Icon name="user" size={13} /> {t('f.sexe')}</label>
           <select id="cp-sexe" value={sexe} onChange={(e) => setSexe(e.target.value)}>
             <option value="">{t('f.all')}</option>
-            <option value="H">Hommes</option>
-            <option value="F">Femmes</option>
+            <option value="H">{L('Hommes', 'Men')}</option>
+            <option value="F">{L('Femmes', 'Women')}</option>
           </select>
         </div>
         <div className="toolbar__field toolbar__field--wide">
-          <label htmlFor="cp-q"><Icon name="search" size={13} /> Rechercher</label>
+          <label htmlFor="cp-q"><Icon name="search" size={13} /> {t('nav.search')}</label>
           <input
             id="cp-q"
             type="search"
             value={q}
-            placeholder="Nom, club…"
+            placeholder={L('Nom, club…', 'Name, club…')}
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
         <div className="toolbar__field toolbar__field--action">
           <span className="toolbar__count">
-            <b>{fmt(liste.length)}</b> lauréats
+            <b>{fmt(liste.length)}</b> {L('lauréats', 'finishers')}
           </span>
           <button type="button" className="btn btn--secondary btn--sm" onClick={exportCSV}>
             <Icon name="download" size={15} /> {t('f.export')}
@@ -399,21 +490,21 @@ function Complete({ defis, stats, participants, lang }) {
       <div className="kpis">
         <div className="kpi">
           <b className="kpi__v">{defis.complete.length}</b>
-          <span className="kpi__l">Lauréats calculés dans le journal</span>
+          <span className="kpi__l">{L('Lauréats calculés dans le journal', 'Finishers computed from the log')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{stats.tcdPalmares.complete20.length}</b>
-          <span className="kpi__l">Lauréats de l'onglet « 20 flèches »</span>
+          <span className="kpi__l">{L("Lauréats de l'onglet « 20 flèches »", 'Finishers in the “20 Flèches” sheet')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{croisement}</b>
-          <span className="kpi__l">Présents dans les deux listes</span>
+          <span className="kpi__l">{L('Présents dans les deux listes', 'In both lists')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">
             {defis.complete.filter((c) => c.sexe === 'F').length}
           </b>
-          <span className="kpi__l">Femmes La Complète</span>
+          <span className="kpi__l">{L('Femmes La Complète', 'Women finishers')}</span>
         </div>
       </div>
 
@@ -432,12 +523,12 @@ function Complete({ defis, stats, participants, lang }) {
                   <b>{c.nom}</b>
                 )}
                 <span className="muted">{c.sexe === 'F' ? '♀' : '♂'}</span>
-                <span className="row-app__meta">{c.club || 'Sans club'}</span>
+                <span className="row-app__meta">{nomClub(c.club, lang) || t('f.none')}</span>
               </span>
               <span className="row-app__meta">
-                {c.nb} flèches · {fmtDate(c.premiere)} → {fmtDate(c.derniere)}
+                {c.nb} {L('flèches', 'Flèches')} · {fmtDate(c.premiere)} → {fmtDate(c.derniere)}
                 {officiel !== undefined && officiel !== c.nb && (
-                  <span className="muted"> · onglet : {officiel}</span>
+                  <span className="muted"> · {L('onglet', 'sheet')} : {officiel}</span>
                 )}
               </span>
             </div>
@@ -445,8 +536,10 @@ function Complete({ defis, stats, participants, lang }) {
         })}
       </div>
       <p className="t-small muted">
-        Croisement du journal détaillé (20 destinations distinctes) et de l'onglet historique
-        « Les 20 flèches » du classeur. Les écarts éventuels sont signalés.
+        {L(
+          "Croisement du journal détaillé (20 destinations distinctes) et de l'onglet historique « Les 20 flèches » du classeur. Les écarts éventuels sont signalés.",
+          'Cross-check of the detailed log (20 distinct destinations) against the historical “Les 20 flèches” sheet of the workbook. Any discrepancies are flagged.',
+        )}
       </p>
     </>
   )
@@ -455,50 +548,52 @@ function Complete({ defis, stats, participants, lang }) {
 /* ------------------------------------------------------------------- express */
 
 function Express({ defis }) {
-  const connus = [
-    { nom: 'Guy LANNES', annee: 2004 },
-    { nom: 'Jacques MARIE', annee: 2009 },
-  ]
+  const L = useL()
+  const lang = useLang()
+  const liste = [...defis.express].sort((a, b) => a.annee - b.annee)
+  const kmMax = Math.max(0, ...liste.map((e) => e.km || 0))
   return (
     <>
       <div className="kpis">
         <div className="kpi">
-          <b className="kpi__v">{defis.express.length}</b>
-          <span className="kpi__l">Complètes express détectées</span>
+          <b className="kpi__v">{liste.length}</b>
+          <span className="kpi__l">{L('Complètes express vérifiées', 'Verified Express Completes')}</span>
         </div>
         <div className="kpi">
-          <b className="kpi__v">≈ 11 200</b>
-          <span className="kpi__l">Kilomètres sur une seule année</span>
+          <b className="kpi__v">{fmt(kmMax)}</b>
+          <span className="kpi__l">{L('Kilomètres sur une seule saison (record)', 'Kilometres in a single season (record)')}</span>
         </div>
       </div>
 
       <div className="rows-app">
-        {defis.express.map((e) => (
+        {liste.map((e) => (
           <div className="row-app" key={`${e.nom}-${e.annee}`}>
             <span className="row-app__main">
               <a className="link" href={`#/annuaire/pid=${e.id}`}>
                 <b>{e.nom}</b>
               </a>
               <span className="muted">{e.sexe === 'F' ? '♀' : '♂'}</span>
-              <span className="row-app__meta">{e.club || 'Sans club'}</span>
+              <span className="row-app__meta">{nomClub(e.club, lang) || L('Sans club', 'No club')}</span>
             </span>
             <span className="row-app__meta">
-              <b>{e.annee}</b> · 20 flèches en une année
+              <b>{L(`Saison ${e.annee}`, `${e.annee} season`)}</b> ·{' '}
+              {L(`${e.nbDest} flèches distinctes`, `${e.nbDest} distinct Flèches`)} · {fmt(e.km)} km
+              {e.debut && e.fin && (
+                <span className="muted">
+                  {' '}
+                  · {fmtDate(e.debut)} → {fmtDate(e.fin)}
+                </span>
+              )}
             </span>
           </div>
         ))}
       </div>
 
       <div className="note">
-        <b>Références du club :</b>{' '}
-        {connus.map((c, i) => (
-          <span key={c.nom}>
-            {i > 0 && ' · '}
-            {c.nom} en {c.annee}
-          </span>
-        ))}
-        . La détection automatique ci-dessus recalcule le défi sur l'intégralité du journal
-        (toutes années confondues).
+        {L(
+          "Chaque cas est vérifié sur le journal : les 20 destinations distinctes sont homologuées dans un même millésime. L'année des Flèches court du 1er octobre au 30 septembre suivant (règlement, article 3) : la saison 2026 commence donc le 1er octobre 2025. Pour les éditions anciennes, seule l'année est connue.",
+          'Each case is checked against the log: all 20 distinct destinations are validated within one and the same season. The Flèches year runs from 1 October to 30 September of the following year (rules, article 3), so the 2026 season starts on 1 October 2025. For older editions only the year is known.',
+        )}
       </div>
     </>
   )
@@ -506,19 +601,29 @@ function Express({ defis }) {
 
 /* ------------------------------------------------------------------ combiné */
 
-function Combiné() {
+function Combine() {
+  const L = useL()
   return (
     <div className="prose">
-      <h3 className="t-h3">Le combiné des Flèches et des Relais</h3>
+      <h3 className="t-h3">{L('Le combiné des Flèches et des Relais', 'The Flèches and Relais combined')}</h3>
       <p>
-        Le combiné couplage deux défis du club : réaliser les <b>20 Flèches de France</b> et
-        participer aux <b>Relais de France</b>, deux randonnées permanentes qui se répondent sur
-        le territoire. Les deux carnets se valident séparément ; le combiné récompense ceux qui
-        mènent les deux à bien sur le même cycle.
+        {L(
+          'Le combiné associe deux défis du club : réaliser les ',
+          'The combined challenge pairs two of the club’s challenges: riding the ',
+        )}
+        <b>{L('20 Flèches de France', '20 Flèches de France')}</b>
+        {L(' et participer aux ', ' and taking part in the ')}
+        <b>Relais de France</b>
+        {L(
+          ', deux randonnées permanentes qui se répondent sur le territoire. Les deux carnets se valident séparément ; le combiné récompense ceux qui mènent les deux à bien sur le même cycle.',
+          ', two permanent rides that echo each other across France. Both route books are validated separately; the combined award goes to those who complete both over the same cycle.',
+        )}
       </p>
       <p>
-        Les Relais de France sont organisés par les mêmes bénévoles que les Flèches : retrouvez
-        leur règlement et leurs parcours sur la page des organisations du club.
+        {L(
+          'Les Relais de France sont organisés par les mêmes bénévoles que les Flèches : retrouvez leur règlement et leurs parcours sur la page des organisations du club.',
+          'The Relais de France are run by the same volunteers as the Flèches: find their rules and routes on the club’s events page.',
+        )}
       </p>
       <p>
         <a
@@ -527,7 +632,7 @@ function Combiné() {
           target="_blank"
           rel="noreferrer"
         >
-          Les Relais de France ↗
+          {L('Les Relais de France', 'The Relais de France')} ↗
         </a>
       </p>
     </div>

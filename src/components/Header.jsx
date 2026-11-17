@@ -71,7 +71,7 @@ export default function Header({ lang, setLang, onSearch }) {
         {/* rangée hôte : menu principal du site Audax Club Parisien */}
         <div className="acp-bar__top">
           <div className="wrap acp-bar__in">
-          <nav aria-label="Menu principal Audax Club Parisien" className="acp-bar__links">
+          <nav aria-label={lang === 'en' ? 'Audax Club Parisien main menu' : 'Menu principal Audax Club Parisien'} className="acp-bar__links">
             {LIENS_ACP.map(([href, key]) => (
               <a key={key} href={href} target="_blank" rel="noreferrer">
                 {t(key)}
@@ -79,7 +79,7 @@ export default function Header({ lang, setLang, onSearch }) {
             ))}
           </nav>
           <label className="lang">
-            <span className="sr-only">Langue</span>
+            <span className="sr-only">{lang === 'en' ? 'Language' : 'Langue'}</span>
             <select value={lang} onChange={(e) => setLang(e.target.value)}>
               {LANGS.map((l) => (
                 <option key={l.code} value={l.code}>
@@ -108,7 +108,7 @@ export default function Header({ lang, setLang, onSearch }) {
           </span>
         </a>
 
-        <nav aria-label="Sections des Flèches de France" className="acp-tabs">
+        <nav aria-label={lang === 'en' ? 'Flèches de France sections' : 'Sections des Flèches de France'} className="acp-tabs">
           {VUES.map(([view, key, ico]) => (
             <a
               key={view}
@@ -134,7 +134,7 @@ export default function Header({ lang, setLang, onSearch }) {
             id="q-header"
             name="q"
             type="search"
-            placeholder="Rechercher…"
+            placeholder={lang === 'en' ? 'Search…' : 'Rechercher…'}
             autoComplete="off"
           />
         </form>
@@ -177,7 +177,7 @@ export default function Header({ lang, setLang, onSearch }) {
             ))}
             <hr />
             <label className="lang lang--sheet">
-              <span className="sr-only">Langue</span>
+              <span className="sr-only">{lang === 'en' ? 'Language' : 'Langue'}</span>
               <select value={lang} onChange={(e) => setLang(e.target.value)}>
                 {LANGS.map((l) => (
                   <option key={l.code} value={l.code}>

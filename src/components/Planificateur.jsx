@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Icon from './Icon.jsx'
 import { fmt } from '../lib/data.js'
+import { useLang, pick } from '../lib/i18n.js'
 
 /* Planificateur de flèche — la page qui se superpose à la fenêtre ouverte.
    Tout est calculé dans le navigateur à partir de fleches.json (délais
@@ -8,9 +9,9 @@ import { fmt } from '../lib/data.js'
    pour connaître son heure limite, son allure minimale et ses repères. */
 
 const FORMULES = [
-  { code: 'O', nom: 'Or' },
-  { code: 'A', nom: 'Argent' },
-  { code: 'B', nom: 'Bronze' },
+  { code: 'O', nom: 'Or', en: 'Gold' },
+  { code: 'A', nom: 'Argent', en: 'Silver' },
+  { code: 'B', nom: 'Bronze', en: 'Bronze' },
 ]
 
 /** « 15h15 », « 12h », « 307h » → minutes. */
@@ -20,23 +21,32 @@ function parseDelai(s) {
   return Number(m[1]) * 60 + Number(m[2] || 0)
 }
 
-function fmtDuree(min) {
+function fmtDuree(min, lang) {
   const j = Math.floor(min / 1440)
   const h = Math.floor((min % 1440) / 60)
   const m = min % 60
-  if (j > 0) return `${j} j ${h} h`
+  if (j > 0) return lang === 'en' ? `${j} d ${h} h` : `${j} j ${h} h`
   if (m > 0) return `${h} h ${String(m).padStart(2, '0')}`
   return `${h} h`
 }
 
-const F_DATE = new Intl.DateTimeFormat('fr-FR', {
+const OPTS_DATE = {
   weekday: 'short',
   day: 'numeric',
   month: 'short',
   hour: '2-digit',
   minute: '2-digit',
-})
-const F_HEURE = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+const FORMATS = {
+  fr: {
+    date: new Intl.DateTimeFormat('fr-FR', OPTS_DATE),
+    heure: new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+  },
+  en: {
+    date: new Intl.DateTimeFormat('en-GB', OPTS_DATE),
+    heure: new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }),
+  },
+}
 
 function isoJour(d = new Date()) {
   const p = (n) => String(n).padStart(2, '0')
@@ -44,14 +54,18 @@ function isoJour(d = new Date()) {
 }
 
 const ETAPES = [
-  { pct: 0, label: 'Départ' },
-  { pct: 0.25, label: '25 % du parcours' },
-  { pct: 0.5, label: 'Mi-parcours' },
-  { pct: 0.75, label: '75 % du parcours' },
-  { pct: 1, label: 'Arrivée' },
+  { pct: 0, label: 'Départ', en: 'Start' },
+  { pct: 0.25, label: '25 % du parcours', en: '25% of the route' },
+  { pct: 0.5, label: 'Mi-parcours', en: 'Halfway' },
+  { pct: 0.75, label: '75 % du parcours', en: '75% of the route' },
+  { pct: 1, label: 'Arrivée', en: 'Finish' },
 ]
 
 export default function Planificateur({ fleches, initialId, onClose }) {
+  const lang = useLang()
+  const L = pick(lang)
+  const F_DATE = FORMATS[lang === 'en' ? 'en' : 'fr'].date
+  const F_HEURE = FORMATS[lang === 'en' ? 'en' : 'fr'].heure
   const box = useRef(null)
   const retour = useRef(null)
 
@@ -126,7 +140,8 @@ export default function Planificateur({ fleches, initialId, onClose }) {
 
   if (!fleche) return null
 
-  const nomF = FORMULES.find((f) => f.code === formule)?.nom ?? ''
+  const fo = FORMULES.find((f) => f.code === formule)
+  const nomF = fo ? L(fo.nom, fo.en) : ''
 
   const pctEtape = (pct) => `${pct * 100}%`
   const nuits = plan ? Math.max(0, plan.jours - 1) : 0
@@ -147,16 +162,18 @@ export default function Planificateur({ fleches, initialId, onClose }) {
             <Icon name="calculator" size={22} />
           </span>
           <div>
-            <p className="pl-kicker">Sans classeur · calcul instantané</p>
+            <p className="pl-kicker">{L('Sans classeur · calcul instantané', 'No spreadsheet · instant calculation')}</p>
             <h2 id="planif-titre" className="pl-title">
-              Planifiez votre Flèche
+              {L('Planifiez votre Flèche', 'Plan your Flèche')}
             </h2>
             <p className="pl-intro">
-              Choisissez une flèche, une formule et votre départ : le plan de route s’écrit tout
-              seul, délais officiels à l’appui.
+              {L(
+                'Choisissez une flèche, une formule et votre départ : le plan de route s’écrit tout seul, délais officiels à l’appui.',
+                'Pick a Flèche, a formula and your start time: the ride plan writes itself, based on the official time limits.',
+              )}
             </p>
           </div>
-          <button type="button" className="pl-close" onClick={onClose} aria-label="Fermer">
+          <button type="button" className="pl-close" onClick={onClose} aria-label={L('Fermer', 'Close')}>
             <Icon name="x" size={18} />
           </button>
         </header>
@@ -182,7 +199,7 @@ export default function Planificateur({ fleches, initialId, onClose }) {
 
             <div className="pl-field pl-field--wide" role="group" aria-labelledby="planif-formule-lbl">
               <span className="pl-label" id="planif-formule-lbl">
-                <Icon name="medal" size={14} /> Formule visée
+                <Icon name="medal" size={14} /> {L('Formule visée', 'Target formula')}
               </span>
               <div className="pl-formules">
                 {FORMULES.map((f) => (
@@ -193,7 +210,7 @@ export default function Planificateur({ fleches, initialId, onClose }) {
                     aria-pressed={formule === f.code}
                     onClick={() => setFormule(f.code)}
                   >
-                    <span className="pl-formule__nom">{f.nom}</span>
+                    <span className="pl-formule__nom">{L(f.nom, f.en)}</span>
                     <b>{fleche.delais[f.code]}</b>
                   </button>
                 ))}
@@ -202,48 +219,51 @@ export default function Planificateur({ fleches, initialId, onClose }) {
 
             <div className="pl-field">
               <label htmlFor="planif-date">
-                <Icon name="calendar" size={14} /> Date de départ
+                <Icon name="calendar" size={14} /> {L('Date de départ', 'Start date')}
               </label>
               <input id="planif-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div className="pl-field">
               <label htmlFor="planif-heure">
-                <Icon name="clock" size={14} /> Heure de départ
+                <Icon name="clock" size={14} /> {L('Heure de départ', 'Start time')}
               </label>
               <input id="planif-heure" type="time" value={heure} onChange={(e) => setHeure(e.target.value)} />
             </div>
           </div>
 
           {!plan ? (
-            <p className="note">Délai officiel illisible pour cette formule.</p>
+            <p className="note">{L('Délai officiel illisible pour cette formule.', 'The official time limit for this formula could not be read.')}</p>
           ) : (
             <div className="pl-result" key={`${fleche.id}-${formule}`}>
               {/* --------------------------------------------- résultat */}
               <div className="pl-hero">
                 <div>
                   <p className="pl-hero__lbl">
-                    <Icon name="flag" size={14} /> Arrivée au plus tard
+                    <Icon name="flag" size={14} /> {L('Arrivée au plus tard', 'Latest finish')}
                   </p>
                   <p className="pl-hero__v">{F_DATE.format(plan.fin)}</p>
                   <p className="pl-hero__sub">
-                    Départ {F_DATE.format(plan.debut)} · délai {nomF} {fleche.delais[formule]}
+                    {L(
+                      `Départ ${F_DATE.format(plan.debut)} · délai ${nomF} ${fleche.delais[formule]}`,
+                      `Start ${F_DATE.format(plan.debut)} · ${nomF} limit ${fleche.delais[formule]}`,
+                    )}
                   </p>
                 </div>
                 <ul className="pl-kpis">
                   <li>
                     <Icon name="timer" size={16} />
-                    <b>{fmtDuree(plan.duree)}</b>
-                    <span>délai</span>
+                    <b>{fmtDuree(plan.duree, lang)}</b>
+                    <span>{L('délai', 'time limit')}</span>
                   </li>
                   <li>
                     <Icon name="gauge" size={16} />
                     <b>{plan.allure.toFixed(1)} km/h</b>
-                    <span>allure minimale</span>
+                    <span>{L('allure minimale', 'minimum pace')}</span>
                   </li>
                   <li>
                     <Icon name="mountain" size={16} />
                     <b>{fmt(Math.round(plan.dplusH))} m/h</b>
-                    <span>de D+</span>
+                    <span>{L('de D+', 'climbing')}</span>
                   </li>
                 </ul>
               </div>
@@ -251,8 +271,8 @@ export default function Planificateur({ fleches, initialId, onClose }) {
               {/* ---------------------------------- frise des repères */}
               <section className="pl-frise" aria-labelledby="planif-etape">
                 <h3 className="pl-h" id="planif-etape">
-                  <Icon name="route" size={15} /> Repères horaires
-                  <span>au rythme moyen minimal</span>
+                  <Icon name="route" size={15} /> {L('Repères horaires', 'Timing checkpoints')}
+                  <span>{L('au rythme moyen minimal', 'at the minimum average pace')}</span>
                 </h3>
                 <div className="pl-track" aria-hidden="true">
                   <span className="pl-track__fill" />
@@ -268,17 +288,25 @@ export default function Planificateur({ fleches, initialId, onClose }) {
                     <li key={e.label} style={{ '--x': pctEtape(e.pct) }}>
                       <b>{F_HEURE.format(e.heure)}</b>
                       <span>{fmt(e.km)} km</span>
-                      <em>{e.label}</em>
+                      <em>{L(e.label, e.en)}</em>
                     </li>
                   ))}
                 </ol>
                 <p className="pl-note">
                   <Icon name="info" size={13} />{' '}
                   {plan.jours > 1
-                    ? `Délai long : ${nuits} nuit${nuits > 1 ? 's' : ''} possible${nuits > 1 ? 's' : ''}, soit au moins ${fmt(
-                        Math.round(plan.kmJour),
-                      )} km par jour sur ${plan.jours} journées.`
-                    : 'Délai court : parcours à réaliser d’une traite, sans dormir sur le parcours. Seule l’heure d’arrivée est contrôlée.'}
+                    ? L(
+                        `Délai long : ${nuits} nuit${nuits > 1 ? 's' : ''} possible${nuits > 1 ? 's' : ''}, soit au moins ${fmt(
+                          Math.round(plan.kmJour),
+                        )} km par jour sur ${plan.jours} journées.`,
+                        `Long limit: ${nuits} night${nuits > 1 ? 's' : ''} possible, i.e. at least ${fmt(
+                          Math.round(plan.kmJour),
+                        )} km a day over ${plan.jours} days.`,
+                      )
+                    : L(
+                        'Délai court : parcours à réaliser d’une traite, sans dormir sur le parcours. Seule l’heure d’arrivée est contrôlée.',
+                        'Short limit: the route is ridden in one go, without sleeping along the way. Only the finish time is checked.',
+                      )}
                 </p>
               </section>
 
@@ -291,32 +319,32 @@ export default function Planificateur({ fleches, initialId, onClose }) {
                 </li>
                 <li>
                   <Icon name="mountain" size={15} />
-                  <span>Dénivelé</span>
+                  <span>{L('Dénivelé', 'Elevation gain')}</span>
                   <b>{fmt(fleche.dplus)} m</b>
                 </li>
                 <li>
                   <Icon name="flag" size={15} />
-                  <span>Départ décalé</span>
+                  <span>{L('Départ décalé', 'Alternative start')}</span>
                   <b>
                     {fleche.depart.commune} · {fmt(fleche.depart.km)} km
                   </b>
                 </li>
                 <li>
                   <Icon name="users" size={15} />
-                  <span>Déjà homologuées</span>
+                  <span>{L('Déjà homologuées', 'Already validated')}</span>
                   <b>{fmt(fleche.stats.total)}</b>
                 </li>
               </ul>
 
               <div className="pl-actions">
                 <a className="btn btn--primary" href={fleche.openrunner} target="_blank" rel="noreferrer">
-                  <Icon name="route" size={16} /> Tracé OpenRunner
+                  <Icon name="route" size={16} /> {L('Tracé OpenRunner', 'OpenRunner route')}
                 </a>
                 <a className="btn btn--secondary" href={fleche.pdf} target="_blank" rel="noreferrer">
-                  <Icon name="file-text" size={16} /> Feuille de route PDF
+                  <Icon name="file-text" size={16} /> {L('Feuille de route PDF', 'Route sheet PDF')}
                 </a>
                 <a className="link pl-xls" href="./assets/Calculateur-fleches-v2.3.xlsx" download>
-                  <Icon name="download" size={14} /> Classeur Excel v2.3
+                  <Icon name="download" size={14} /> {L('Classeur Excel v2.3', 'Excel workbook v2.3')}
                 </a>
               </div>
             </div>

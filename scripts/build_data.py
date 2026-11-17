@@ -768,7 +768,8 @@ def main():
         cell = {}
         for f in ("O", "A", "B"):
             rows_f = [r for r in records if norm_key(r["dest"]) == k and r["formule"] == f]
-            rows_f.sort(key=lambda r: (r["annee"] or 0, r["date"] or "", r["num"] or 0))
+            # premier lauréat = plus ancienne date de réalisation (puis n° d'homologation)
+            rows_f.sort(key=lambda r: (r["date"] or f"{r['annee']}-12-31", r["num"] or 0))
             if rows_f:
                 r0 = rows_f[0]
                 cell[f] = {"nom": f"{r0['nom']} {r0['prenom']}", "annee": r0["annee"],

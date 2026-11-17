@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Fiche from '../components/Fiche.jsx'
 import Badge from '../components/Badge.jsx'
 import Icon from '../components/Icon.jsx'
-import { makeT } from '../lib/i18n.js'
+import { makeT, pick, nomClub } from '../lib/i18n.js'
 import { fmt, norm, downloadCSV, TRANCHES } from '../lib/data.js'
 import { useRoute } from '../lib/store.jsx'
 
@@ -28,6 +28,7 @@ const CLES_AVANCEES = ['fede', 'fleche', 'sexe', 'tranche', 'dept', 'pays', 'neo
 
 export default function Annuaire({ lang, data, routeParam }) {
   const t = makeT(lang)
+  const L = pick(lang)
   const [, go] = useRoute()
   const { participants, homologations, fleches, clubs, meta } = data
 
@@ -136,30 +137,30 @@ export default function Annuaire({ lang, data, routeParam }) {
     downloadCSV(
       'annuaire-fleches-de-france.csv',
       [
-        { label: 'Nom', value: (x) => x.p.nom },
-        { label: 'Prénom', value: (x) => x.p.prenom },
-        { label: 'Sexe', value: (x) => x.p.sexe },
-        { label: 'Club', value: (x) => x.p.club },
-        { label: 'Code club', value: (x) => x.p.code },
-        { label: 'Fédération', value: (x) => x.p.fede },
-        { label: 'Commune', value: (x) => x.p.ville },
-        { label: 'Département', value: (x) => x.p.dept },
-        { label: 'Pays', value: (x) => x.p.pays },
-        { label: 'Tranche âge', value: (x) => x.p.tranche },
-        { label: 'Homologations', value: (x) => x.a.nb },
-        { label: 'Flèches distinctes', value: (x) => x.a.dests.size },
+        { label: L('Nom', 'Last name'), value: (x) => x.p.nom },
+        { label: L('Prénom', 'First name'), value: (x) => x.p.prenom },
+        { label: L('Sexe', 'Gender'), value: (x) => x.p.sexe },
+        { label: L('Club', 'Club'), value: (x) => x.p.club },
+        { label: L('Code club', 'Club code'), value: (x) => x.p.code },
+        { label: L('Fédération', 'Federation'), value: (x) => x.p.fede },
+        { label: L('Commune', 'Town'), value: (x) => x.p.ville },
+        { label: L('Département', 'Department'), value: (x) => x.p.dept },
+        { label: L('Pays', 'Country'), value: (x) => x.p.pays },
+        { label: L('Tranche âge', 'Age band'), value: (x) => x.p.tranche },
+        { label: L('Homologations', 'Validated rides'), value: (x) => x.a.nb },
+        { label: L('Flèches distinctes', 'Distinct Flèches'), value: (x) => x.a.dests.size },
         { label: 'Km', value: (x) => x.a.km },
-        { label: 'D+ (m)', value: (x) => x.a.dplus },
-        { label: 'Or', value: (x) => x.a.O },
-        { label: 'Argent', value: (x) => x.a.A },
+        { label: L('D+ (m)', 'Elevation gain (m)'), value: (x) => x.a.dplus },
+        { label: L('Or', 'Gold'), value: (x) => x.a.O },
+        { label: L('Argent', 'Silver'), value: (x) => x.a.A },
         { label: 'Bronze', value: (x) => x.a.B },
-        { label: 'Première flèche', value: (x) => x.a.premiere },
-        { label: 'Dernière flèche', value: (x) => x.a.derniere },
+        { label: L('Première flèche', 'First Flèche'), value: (x) => x.a.premiere },
+        { label: L('Dernière flèche', 'Last Flèche'), value: (x) => x.a.derniere },
         ...(manager
           ? [
-              { label: 'Téléphone', value: (x) => x.p.tel },
-              { label: 'Adresse', value: (x) => x.p.rue },
-              { label: 'Code postal', value: (x) => x.p.cp },
+              { label: L('Téléphone', 'Phone'), value: (x) => x.p.tel },
+              { label: L('Adresse', 'Address'), value: (x) => x.p.rue },
+              { label: L('Code postal', 'Postcode'), value: (x) => x.p.cp },
             ]
           : []),
       ],
@@ -183,13 +184,16 @@ export default function Annuaire({ lang, data, routeParam }) {
           <h1 id="h-annuaire" className="t-h2">
             {t('view.annuaire')}{' '}
             <span className="muted">
-              {fmt(meta.participants)} personnes · {fmt(meta.homologations)} homologations
+              {L(
+                `${fmt(meta.participants)} personnes · ${fmt(meta.homologations)} homologations`,
+                `${fmt(meta.participants)} riders · ${fmt(meta.homologations)} validated rides`,
+              )}
             </span>
           </h1>
         </div>
 
         {/* --- filtres principaux : recherche + Année + Club + Formule ----- */}
-        <div className="toolbar toolbar--main" role="search" aria-label="Filtres de l'annuaire">
+        <div className="toolbar toolbar--main" role="search" aria-label={L("Filtres de l'annuaire", 'Directory filters')}>
           <div className="toolbar__field toolbar__field--wide">
             <label htmlFor="an-q"><Icon name="search" size={13} /> {t('f.search')}</label>
             <input
@@ -219,7 +223,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               id="an-club"
               list="liste-clubs"
               value={f.club}
-              placeholder="Tous les clubs"
+              placeholder={L('Tous les clubs', 'All clubs')}
               onChange={(e) => set('club', e.target.value)}
             />
             <datalist id="liste-clubs">
@@ -237,8 +241,8 @@ export default function Annuaire({ lang, data, routeParam }) {
               onChange={(e) => set('formule', e.target.value)}
             >
               <option value="">{t('f.all')}</option>
-              <option value="O">Or</option>
-              <option value="A">Argent</option>
+              <option value="O">{L('Or', 'Gold')}</option>
+              <option value="A">{L('Argent', 'Silver')}</option>
               <option value="B">Bronze</option>
             </select>
           </div>
@@ -272,7 +276,7 @@ export default function Annuaire({ lang, data, routeParam }) {
                     {x}
                   </option>
                 ))}
-                <option value="(vide)">Sans licence</option>
+                <option value="(vide)">{L('Sans licence', 'No licence')}</option>
               </select>
             </div>
 
@@ -292,8 +296,8 @@ export default function Annuaire({ lang, data, routeParam }) {
               <label htmlFor="an-sexe"><Icon name="user" size={13} /> {t('f.sexe')}</label>
               <select id="an-sexe" value={f.sexe} onChange={(e) => set('sexe', e.target.value)}>
                 <option value="">{t('f.all')}</option>
-                <option value="H">Hommes</option>
-                <option value="F">Femmes</option>
+                <option value="H">{L('Hommes', 'Men')}</option>
+                <option value="F">{L('Femmes', 'Women')}</option>
               </select>
             </div>
 
@@ -307,7 +311,7 @@ export default function Annuaire({ lang, data, routeParam }) {
                 <option value="">{t('f.all')}</option>
                 {TRANCHES.map((x) => (
                   <option key={x.code} value={x.code}>
-                    {x.nom}
+                    {L(x.nom, x.en)}
                   </option>
                 ))}
               </select>
@@ -340,11 +344,11 @@ export default function Annuaire({ lang, data, routeParam }) {
             <div className="toolbar__field toolbar__field--sort">
               <label htmlFor="an-tri"><Icon name="list" size={13} /> {t('f.sort')}</label>
               <select id="an-tri" value={tri} onChange={(e) => setTri(e.target.value)}>
-                <option value="nb">Nombre de flèches</option>
-                <option value="distinctes">Flèches distinctes</option>
-                <option value="km">Kilomètres</option>
-                <option value="recent">Dernière participation</option>
-                <option value="nom">Nom (A → Z)</option>
+                <option value="nb">{L('Nombre de flèches', 'Number of Flèches')}</option>
+                <option value="distinctes">{L('Flèches distinctes', 'Distinct Flèches')}</option>
+                <option value="km">{L('Kilomètres', 'Kilometres')}</option>
+                <option value="recent">{L('Dernière participation', 'Most recent ride')}</option>
+                <option value="nom">{L('Nom (A → Z)', 'Name (A → Z)')}</option>
               </select>
             </div>
 
@@ -433,11 +437,11 @@ export default function Annuaire({ lang, data, routeParam }) {
                         {p.nom} {p.prenom}
                       </button>
                       {p.complete && (
-                        <span className="chip chip--actif chip--sous">La Complète</span>
+                        <span className="chip chip--actif chip--sous">{t('f.complete')}</span>
                       )}
                       {manager && p.tel && <span className="tel"> · {p.tel}</span>}
                     </th>
-                    <td>{p.club || '—'}</td>
+                    <td>{nomClub(p.club, lang) || '—'}</td>
                     <td>
                       {p.ville || '—'}
                       {p.dept ? <span className="muted"> ({p.dept})</span> : null}
@@ -477,14 +481,14 @@ export default function Annuaire({ lang, data, routeParam }) {
         )}
 
         {pages > 1 && (
-          <nav className="pager" aria-label="Pagination">
+          <nav className="pager" aria-label={L('Pagination', 'Pagination')}>
             <button
               type="button"
               className="btn btn--secondary btn--sm"
               disabled={page === 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              <Icon name="chevron-left" size={15} /> Précédent
+              <Icon name="chevron-left" size={15} /> {L('Précédent', 'Previous')}
             </button>
             <span className="muted">
               Page {page} / {pages}
@@ -495,7 +499,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               disabled={page === pages}
               onClick={() => setPage((p) => Math.min(pages, p + 1))}
             >
-              Suivant <Icon name="chevron-right" size={15} />
+              {L('Suivant', 'Next')} <Icon name="chevron-right" size={15} />
             </button>
           </nav>
         )}
