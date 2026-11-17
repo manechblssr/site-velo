@@ -291,6 +291,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   const vol = useRef({ timer: 0, secours: 0 })
   handlers.current = {
     ouvrir: (id) => zoomerSur(id),
+    centrer: () => centrerEcran(),
     laureats: onOpenFleche,
     planifier: (id) => setPlanif(id),
     survol: (id) => setSurvol(id),
@@ -381,10 +382,25 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
      2. la caméra vole pour cadrer l'arc entier ;
      3. une fois posée, la fiche s'ouvre sur la ville d'arrivée.
      Interrupteur « Animation » coupé : cadrage et fiche immédiats. */
+  /* Centre verticalement le bloc de la carte dans la fenêtre : autant de
+     place au-dessus (sous l'en-tête fixe) qu'en dessous. Plus haute que
+     l'espace visible, la carte se cale simplement sous l'en-tête. */
+  function centrerEcran() {
+    const bloc = mapEl.current?.closest('.cx-map')
+    if (!bloc) return
+    const r = bloc.getBoundingClientRect()
+    const entete = document.querySelector('header.nav')?.getBoundingClientRect().bottom ?? 0
+    const dispo = window.innerHeight - entete
+    const ecart = r.height <= dispo ? r.top - entete - (dispo - r.height) / 2 : r.top - entete
+    if (Math.abs(ecart) < 4) return
+    window.scrollTo({ top: Math.max(0, window.scrollY + ecart), behavior: 'smooth' })
+  }
+
   function zoomerSur(id) {
     const map = mapRef.current
     const r = refs.current.get(id)
     if (!map || !r?.pts) return
+    centrerEcran()
     const anim = animerRef.current
     window.clearTimeout(vol.current.timer)
     window.clearTimeout(vol.current.secours)
@@ -598,6 +614,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     const activer = () => {
       map.scrollWheelZoom.enable()
       setMolette(true)
+      handlers.current.centrer?.()
     }
     const couper = () => {
       map.scrollWheelZoom.disable()
@@ -962,12 +979,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     const f = fleches.find((x) => x.id === id)
     if (!f?.coords) return
     setTranche('toutes')
-    /* la scène carte + liste vient se caler sous l'en-tête */
-    const scene = stageRef.current
-    if (scene) {
-      const haut = scene.getBoundingClientRect().top + window.scrollY - 116
-      window.scrollTo({ top: Math.max(0, haut), behavior: reduit() ? 'auto' : 'smooth' })
-    }
     mapRef.current.invalidateSize({ animate: false })
     const tm = window.setTimeout(() => handlers.current.ouvrir(id), 450)
     return () => window.clearTimeout(tm)
