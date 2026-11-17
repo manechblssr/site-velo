@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
+import PalmaresNav from '../components/PalmaresNav.jsx'
 import { useData, useRoute } from '../lib/store.jsx'
 import { fmt, fmtKm, norm, downloadCSV } from '../lib/data.js'
 import { useL } from '../lib/i18n.js'
@@ -100,7 +101,6 @@ export default function Clubs() {
     return { km: top('km'), nb: top('nb'), participants: top('participants') }
   }, [clubs])
 
-  const annees = data.stats?.annees ?? []
 
   const exporter = () =>
     downloadCSV(
@@ -125,6 +125,7 @@ export default function Clubs() {
   return (
     <section className="section section--page" aria-labelledby="h-clubs">
       <div className="wrap">
+        <PalmaresNav actif="clubs" />
         <div className="section-head section-head--row">
           <h1 id="h-clubs" className="t-h2">
             {L('Palmarès club', 'Club records')}{' '}
@@ -245,68 +246,6 @@ export default function Clubs() {
         {club && (
           <FicheClub club={club} parClub={parClub} onClose={() => setOuvert(null)} onGo={go} L={L} />
         )}
-
-        {/* --------------------------------------------- statistiques annuelles */}
-        <div className="section-head section-head--row">
-          <h2 className="t-h2">{L('Évolution annuelle', 'Year by year')}</h2>
-          <p className="result-line">
-            <strong>{annees.length}</strong> {L('saisons de 1997 à 2026', 'seasons from 1997 to 2026')}
-          </p>
-        </div>
-
-        <div className="table-scroll">
-          <table className="table-app">
-            <caption className="sr-only">{L('Statistiques annuelles des Flèches de France', 'Flèches de France yearly statistics')}</caption>
-            <thead>
-              <tr>
-                <th scope="col">{L('Année', 'Year')}</th>
-                <th scope="col" className="num">
-                  {L('Homologations', 'Validated rides')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Fléchards', 'Riders')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Nouveaux', 'Newcomers')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Femmes', 'Women')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Hommes', 'Men')}
-                </th>
-                <th scope="col" className="num">
-                  Km
-                </th>
-                <th scope="col" className="num">
-                  {L('Or', 'Gold')}
-                </th>
-                <th scope="col" className="num">
-                  {L('Argent', 'Silver')}
-                </th>
-                <th scope="col" className="num">
-                  Bronze
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {annees.map((a) => (
-                <tr key={a.annee}>
-                  <th scope="row">{a.annee}</th>
-                  <td className="num">{fmt(a.nb)}</td>
-                  <td className="num">{fmt(a.participants)}</td>
-                  <td className="num">{fmt(a.nouveaux)}</td>
-                  <td className="num">{fmt(a.femmes)}</td>
-                  <td className="num">{fmt(a.hommes)}</td>
-                  <td className="num">{fmt(a.km)}</td>
-                  <td className="num">{fmt(a.O)}</td>
-                  <td className="num">{fmt(a.A)}</td>
-                  <td className="num">{fmt(a.B)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
 
         {/* --------------------------------------------------------- records */}
         <div className="section-head">

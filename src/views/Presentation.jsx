@@ -197,7 +197,7 @@ export default function Presentation({ lang, data }) {
                   window.location.hash = '#/annuaire'
                 }}
               >
-                {L("Consulter l'annuaire", 'Browse the directory')}
+                {L('Consulter le palmarès', 'Browse the records')}
               </a>
               <a
                 className="btn btn--secondary"
@@ -597,6 +597,16 @@ export default function Presentation({ lang, data }) {
 
         <Sidebar lang={lang} notes={notes} />
       </div>
+
+      {/* bouton d'inscription fixé en bas à gauche de l'écran */}
+      <a
+        className="btn btn--primary cta-float"
+        href="https://myaccount.audax-club-parisien.com"
+        target="_blank"
+        rel="noreferrer"
+      >
+        {L("S'inscrire aux Flèches", 'Sign up for the Flèches')} <span aria-hidden="true">↗</span>
+      </a>
 
       {planif && <Planificateur fleches={fleches} onClose={() => setPlanif(false)} />}
     </>

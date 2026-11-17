@@ -68,6 +68,9 @@ export default function Footer({ lang, meta }) {
             <li>
               <a href="#/clubs">{t('nav.clubs')}</a>
             </li>
+            <li>
+              <a href="#/evolution">{t('nav.evolution')}</a>
+            </li>
           </ul>
         </nav>
 

@@ -56,16 +56,6 @@ export default function Sidebar({ lang, notes }) {
         </div>
       </div>
 
-      <div className="aside-block">
-        <a
-          className="btn btn--primary aside-cta"
-          href="https://myaccount.audax-club-parisien.com"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {L("S'inscrire aux Flèches", 'Sign up for the Flèches')} <span aria-hidden="true">↗</span>
-        </a>
-      </div>
     </aside>
   )
 }

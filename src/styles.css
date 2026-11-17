@@ -5568,3 +5568,74 @@ main > .hero {
 .table-app td.is-sorted {
   font-weight: 600;
 }
+
+/* Palmarès : sous-navigation commune (individuel, club, évolution) */
+.palmares-nav {
+  align-items: center;
+  margin-bottom: var(--s-4);
+}
+.palmares-nav__titre {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 12px 14px 12px 0;
+  margin-right: var(--s-2);
+  border-right: 1px solid var(--line);
+}
+.palmares-nav .tab-app {
+  text-decoration: none;
+}
+.palmares-nav .tab-app[aria-current='page'] {
+  color: var(--action);
+  border-bottom-color: var(--action);
+}
+.palmares-h3 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+.kpis--records-6 {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: var(--s-6);
+}
+.table-app--evolution tfoot th,
+.table-app--evolution tfoot td {
+  font-weight: 700;
+  border-top: 2px solid var(--line);
+}
+.table-app--evolution td.is-sorted,
+.table-app--evolution th.is-sorted {
+  font-weight: 600;
+}
+
+/* Présentation : bouton d'inscription fixé en bas à gauche de l'écran */
+.cta-float {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 40;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.22);
+}
+@media (max-width: 640px) {
+  .palmares-nav__titre {
+    display: none;
+  }
+}
+.kpis--records-6 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 900px) {
+  .kpis--records-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .kpis--records-6 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.section-head p.palmares-hint {
+  font-size: 14px;
+  margin: 4px 0 0;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import PalmaresNav from '../components/PalmaresNav.jsx'
 import Fiche from '../components/Fiche.jsx'
 import Badge from '../components/Badge.jsx'
 import Icon from '../components/Icon.jsx'
@@ -243,6 +244,7 @@ export default function Annuaire({ lang, data, routeParam }) {
   return (
     <section className="section section--page" aria-labelledby="h-annuaire">
       <div className="wrap">
+        <PalmaresNav actif="annuaire" />
         <div className="section-head section-head--row">
           <h1 id="h-annuaire" className="t-h2">
             {t('view.annuaire')}{' '}

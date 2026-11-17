@@ -9,6 +9,7 @@ import Carte from './views/Carte.jsx'
 import Annuaire from './views/Annuaire.jsx'
 import Defis from './views/Defis.jsx'
 import Clubs from './views/Clubs.jsx'
+import Evolution from './views/Evolution.jsx'
 
 function Shell() {
   const { status, data, error } = useData()
@@ -88,6 +89,7 @@ function Shell() {
     annuaire: <Annuaire lang={lang} data={data} routeParam={route.param} />,
     defis: <Defis lang={lang} data={data} routeParam={route.param} />,
     clubs: <Clubs lang={lang} data={data} />,
+    evolution: <Evolution lang={lang} data={data} />,
   }
 
   return (

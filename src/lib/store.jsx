@@ -38,7 +38,7 @@ export function useData() {
 
 /* --- Routeur en hash : aucune dépendance, fonctionne en file:// ---------- */
 
-const ROUTES = ['presentation', 'carte', 'annuaire', 'defis', 'clubs']
+const ROUTES = ['presentation', 'carte', 'annuaire', 'defis', 'clubs', 'evolution']
 
 function parseHash() {
   const raw = window.location.hash.replace(/^#\/?/, '')

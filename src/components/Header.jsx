@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRoute } from '../lib/store.jsx'
 import { makeT, LANGS } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
+import { VUES_PALMARES } from './PalmaresNav.jsx'
 
 /** Lien externe vers la page d'origine du club (contenu du site hôte). */
 const LIENS_ACP = [
@@ -16,10 +17,13 @@ const LIENS_ACP = [
 const VUES = [
   ['presentation', 'nav.presentation', 'book-open'],
   ['carte', 'nav.carte', 'map'],
-  ['annuaire', 'nav.annuaire', 'users'],
+  ['annuaire', 'nav.palmares', 'users'],
   ['defis', 'nav.defis', 'trophy'],
-  ['clubs', 'nav.clubs', 'bar-chart'],
 ]
+
+/* l'onglet « Palmarès » couvre l'annuaire, les clubs et l'évolution annuelle */
+const estActif = (vue, courante) =>
+  vue === courante || (vue === 'annuaire' && VUES_PALMARES.includes(courante))
 
 export default function Header({ lang, setLang, onSearch }) {
   const [route, go] = useRoute()
@@ -113,7 +117,7 @@ export default function Header({ lang, setLang, onSearch }) {
             <a
               key={view}
               href={`#/${view}`}
-              aria-current={route.view === view ? 'page' : undefined}
+              aria-current={estActif(view, route.view) ? 'page' : undefined}
               onClick={(e) => {
                 e.preventDefault()
                 go(view)
@@ -159,7 +163,7 @@ export default function Header({ lang, setLang, onSearch }) {
               <a
                 key={view}
                 href={`#/${view}`}
-                aria-current={route.view === view ? 'page' : undefined}
+                aria-current={estActif(view, route.view) ? 'page' : undefined}
                 onClick={(e) => {
                   e.preventDefault()
                   go(view)

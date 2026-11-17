@@ -16,6 +16,8 @@ const DICT = {
   'nav.annuaire': ['Palmarès individuel', 'Individual records'],
   'nav.defis': ['Défis & Formules', 'Challenges & formulas'],
   'nav.clubs': ['Palmarès club', 'Club records'],
+  'nav.palmares': ['Palmarès', 'Records'],
+  'nav.evolution': ['Évolution annuelle', 'Year by year'],
   'nav.club': ['Notre club', 'Our club'],
   'nav.orgas': ['Nos organisations', 'Our events'],
   'nav.pbrp': ['Paris-Brest-Paris Randonneur', 'Paris-Brest-Paris Randonneur'],
