@@ -5792,3 +5792,9 @@ main > .hero {
   margin-top: var(--s-6);
   font-weight: 600;
 }
+
+@media (max-width: 639px) {
+  .table-app--mob tbody td.cell-vide {
+    display: none;
+  }
+}

@@ -306,7 +306,7 @@ export default function Presentation({ lang, data }) {
                           {f.depart.commune}
                           <span className="hist"> {fmt(f.depart.km)} km</span>
                         </td>
-                        <td className="num" data-label={L('Mise à jour', 'Updated')}>{f.maj ?? '—'}</td>
+                        <td className={`num${f.maj ? '' : ' cell-vide'}`} data-label={L('Mise à jour', 'Updated')}>{f.maj ?? ''}</td>
                         <td className="res res--ico">
                           <a
                             href={f.openrunner}

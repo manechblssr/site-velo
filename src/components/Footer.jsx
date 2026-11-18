@@ -11,7 +11,7 @@ const ORGAS = [
 const SOCIALS = [
   ['https://www.facebook.com/audaxclubparisien/', 'Facebook'],
   ['https://www.instagram.com/audaxclubparisien/', 'Instagram'],
-  ['https://www.strava.com/clubs/52187', 'Strava'],
+  ['https://www.strava.com/clubs/audax-club-parisien-community', 'Strava'],
 ]
 
 export default function Footer({ lang, meta }) {

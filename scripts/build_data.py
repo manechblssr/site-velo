@@ -466,12 +466,14 @@ def nom_ville(v):
 
 
 def annee_maj(hist_maj, pdf):
-    """Année de mise à jour : colonne MAJ de l'onglet Parcours, sinon année de
-    publication de la feuille de route officielle (dossier uploads/AAAA/)."""
+    """Année de mise à jour : colonne MAJ de l'onglet Parcours, sinon année
+    écrite dans le nom de la feuille de route officielle (…_2025.pdf). Sans
+    l'une ni l'autre, pas d'année : le dossier de mise en ligne ne date pas
+    le parcours."""
     m = re.search(r"(20\d\d)", s(hist_maj))
     if m:
         return int(m.group(1))
-    m = re.search(r"/uploads/(\d{4})/", pdf or "")
+    m = re.search(r"(?<!\d)(20\d\d)(?!\d)", (pdf or "").rsplit("/", 1)[-1])
     return int(m.group(1)) if m else None
 
 
