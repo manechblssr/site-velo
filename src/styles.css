@@ -1082,6 +1082,24 @@ header.nav {
   color: var(--ink);
   font-weight: 600;
 }
+.hero-copy .btn-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 12px;
+}
+.hero-copy .btn-row .btn {
+  justify-content: center;
+  width: 100%;
+}
+@media (max-width: 639px) {
+  .hero-copy .btn-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hero-copy .btn-row .btn {
+    padding-inline: 10px;
+    font-size: 15px;
+  }
+}
 /* le kit force une section à 100vh : le hero grandit avec son contenu */
 main > .hero {
   height: auto;

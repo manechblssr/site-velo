@@ -168,7 +168,7 @@ export default function Presentation({ lang, data }) {
                 {L('Consulter le palmarès', 'Browse the records')}
               </a>
               <a
-                className="btn btn--secondary"
+                className="btn btn--primary"
                 href="#/carte"
                 onClick={(e) => {
                   e.preventDefault()
