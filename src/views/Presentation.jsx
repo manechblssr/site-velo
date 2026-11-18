@@ -100,8 +100,13 @@ export default function Presentation({ lang, data }) {
   const cue = useRef(null)
 
   const pionnier = useMemo(
-    () => homologations.filter((h) => h.annee >= 1997 && h.annee <= 2025).length,
-    [homologations],
+    () => homologations.filter((h) => h.annee >= meta.annees[0] && h.annee <= meta.annees[1]).length,
+    [homologations, meta],
+  )
+  const vierges = useMemo(
+    () =>
+      defis.vierges.filter((v) => !homologations.some((h) => h.dest === v['flèche'] && h.formule === v.formule)).length,
+    [defis, homologations],
   )
 
   /* Invite à défiler : elle s'efface en fondu au fil du défilement (320 px
@@ -367,7 +372,7 @@ export default function Presentation({ lang, data }) {
           <section className="section section--dense" aria-labelledby="h-defis">
             <div className="section-head">
               <h2 id="h-defis" className="t-h2">
-                {L('Les défis', 'The challenges')} <span className="muted">{L('au-delà des 20 flèches', 'beyond the 20 Flèches')}</span>
+                {L('Les défis', 'The challenges')}
               </h2>
             </div>
             <div className="defi-panel">
@@ -397,8 +402,8 @@ export default function Presentation({ lang, data }) {
                 </a>
                 <p className="t-small muted defi-figures">
                   {L(
-                    `${fmt(pionnier)} flèches homologuées entre ${meta.annees[0]} et 2025 dans la base · ${defis.express.length} Complètes express vérifiées · ${defis.vierges.filter((v) => v.vierge1997_2025).length} formules encore vierges sur la période.`,
-                    `${fmt(pionnier)} Flèches validated between ${meta.annees[0]} and 2025 in the database · ${defis.express.length} verified Express Completes · ${defis.vierges.filter((v) => v.vierge1997_2025).length} formulas still unachieved over the period.`,
+                    `${fmt(pionnier)} flèches homologuées entre ${meta.annees[0]} et ${meta.annees[1]} dans la base · ${defis.express.length} Complètes express vérifiées · ${vierges} formules encore vierges.`,
+                    `${fmt(pionnier)} Flèches validated between ${meta.annees[0]} and ${meta.annees[1]} in the database · ${defis.express.length} verified Express Completes · ${vierges} formulas still unachieved.`,
                   )}
                 </p>
               </div>
