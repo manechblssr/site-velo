@@ -29,6 +29,7 @@ import openpyxl
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 XLSX = os.path.join(ROOT, "Tableau de Bord Flèches.xlsx")
+CALC = os.path.join(ROOT, "public", "assets", "Calculateur-fleches-v2.3.xlsx")
 OUT = os.path.join(ROOT, "public", "data")
 
 if hasattr(sys.stdout, "buffer"):
@@ -445,6 +446,47 @@ def parse_tcd_palmares(wb):
     return {"complete20": complete20, "parFleche": par_fleche,
             "parAnnee": par_annee, "palmaresOr": palmares_or}
 
+PETITS_MOTS = {"en", "le", "la", "les", "de", "des", "du", "sur", "sous", "et", "aux", "au"}
+
+
+def nom_ville(v):
+    mots = s(v).lower().replace("-", " - ").split()
+    out = []
+    for i, m in enumerate(mots):
+        if m == "-":
+            out.append(m)
+        elif i and m in PETITS_MOTS:
+            out.append(m)
+        elif m.startswith(("l'", "d'")) and len(m) > 2:
+            out.append(m[:2] + m[2:].capitalize() if i else m[0].upper() + "'" + m[2:].capitalize())
+        else:
+            out.append(m.capitalize())
+    return " ".join(out).replace(" - ", "-")
+
+
+def parse_controles(path=CALC):
+    """Onglet Etapes du calculateur officiel : contrôles et km cumulés depuis Paris."""
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    ws = wb["Etapes"]
+    out = {}
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        nom = s(row[0]).upper()
+        if not nom or s(row[1]).upper() != "PARIS":
+            continue
+        etapes = []
+        for i in range(9):
+            ville, km = row[2 + 3 * i], row[3 + 3 * i]
+            if not s(ville) or not isinstance(km, (int, float)):
+                continue
+            etapes.append({"nom": nom_ville(ville), "km": round(km)})
+        if etapes:
+            etapes[0]["decale"] = True
+            etapes[-1]["arrivee"] = True
+        out[nom] = etapes
+    wb.close()
+    return out
+
+
 def main():
     verify = "--verify" in sys.argv
     wb = load_sheets()
@@ -643,6 +685,7 @@ def main():
     for r in records:
         dest_participants[norm_key(r["dest"])].add((r["nom"], r["prenom"], r["naissance"]))
 
+    controles = parse_controles()
     fleches = []
     for (nom, km, dp, or_, arg, brz, dec, openr, pdf) in OFFICIAL:
         k = norm_key(nom)
@@ -656,6 +699,7 @@ def main():
                        "delais": {"O": dec[3], "A": dec[4], "B": dec[5]},
                        "coords": list(COORDS_DEPART.get(dec[0], (None, None)))},
             "openrunner": openr, "pdf": pdf,
+            "controles": controles.get(nom, []),
             "coords": list(COORDS_ARRIVEE[nom]),
             "hist": {"km": hist.get("km"), "dplus": hist.get("dplus"), "maj": hist.get("maj"),
                      "catKm": hist.get("catKm"), "catDplus": hist.get("catDplus"),

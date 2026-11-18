@@ -5,8 +5,8 @@ import { useLang, pick } from '../lib/i18n.js'
 
 /* Planificateur de flèche — la page qui se superpose à la fenêtre ouverte.
    Tout est calculé dans le navigateur à partir de fleches.json (délais
-   officiels Or / Argent / Bronze) : aucun classeur Excel à télécharger
-   pour connaître son heure limite, son allure minimale et ses repères. */
+   officiels Or / Argent / Bronze, contrôles et km de l'onglet Etapes du
+   calculateur officiel) : aucun classeur Excel à télécharger. */
 
 const FORMULES = [
   { code: 'O', nom: 'Or', en: 'Gold' },
@@ -52,14 +52,6 @@ function isoJour(d = new Date()) {
   const p = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
 }
-
-const ETAPES = [
-  { pct: 0, label: 'Départ', en: 'Start' },
-  { pct: 0.25, label: '25 % du parcours', en: '25% of the route' },
-  { pct: 0.5, label: 'Mi-parcours', en: 'Halfway' },
-  { pct: 0.75, label: '75 % du parcours', en: '75% of the route' },
-  { pct: 1, label: 'Arrivée', en: 'Finish' },
-]
 
 export default function Planificateur({ fleches, initialId, onClose }) {
   const lang = useLang()
@@ -122,6 +114,11 @@ export default function Planificateur({ fleches, initialId, onClose }) {
     const allure = fleche.km / heures
     const dplusH = fleche.dplus / heures
     const jours = Math.ceil(heures / 24)
+    const points = [
+      { nom: 'Paris', km: 0, depart: true },
+      ...(fleche.controles ?? []).map((c) => (c.arrivee ? { ...c, nom: fleche.nom, km: fleche.km } : c)),
+    ]
+    if (!points.at(-1).arrivee) points.push({ nom: fleche.nom, km: fleche.km, arrivee: true })
     return {
       duree,
       debut,
@@ -130,10 +127,11 @@ export default function Planificateur({ fleches, initialId, onClose }) {
       dplusH,
       jours,
       kmJour: fleche.km / jours,
-      etapes: ETAPES.map((e) => ({
+      etapes: points.map((e, i) => ({
         ...e,
-        km: Math.round(fleche.km * e.pct),
-        heure: new Date(debut.getTime() + duree * e.pct * 60000),
+        pct: Math.min(1, e.km / fleche.km),
+        troncon: i ? e.km - points[i - 1].km : 0,
+        heure: new Date(debut.getTime() + duree * Math.min(1, e.km / fleche.km) * 60000),
       })),
     }
   }, [fleche, formule, date, heure])
@@ -268,8 +266,8 @@ export default function Planificateur({ fleches, initialId, onClose }) {
 
               <section className="pl-frise" aria-labelledby="planif-etape">
                 <h3 className="pl-h" id="planif-etape">
-                  <Icon name="route" size={15} /> {L('Repères horaires', 'Timing checkpoints')}
-                  <span>{L('au rythme moyen minimal', 'at the minimum average pace')}</span>
+                  <Icon name="route" size={15} /> {L('Contrôles et heures limites', 'Checkpoints and cut-off times')}
+                  <span>{L('au rythme moyen minimal, km depuis Paris', 'at the minimum average pace, km from Paris')}</span>
                 </h3>
                 <div className="pl-track" aria-hidden="true">
                   <span className="pl-track__fill" />
@@ -277,17 +275,26 @@ export default function Planificateur({ fleches, initialId, onClose }) {
                     <Icon name="bike" size={16} />
                   </span>
                   {plan.etapes.map((e) => (
-                    <i key={e.label} style={{ left: pctEtape(e.pct) }} />
+                    <i key={`${e.nom}-${e.km}`} style={{ left: pctEtape(e.pct) }} />
                   ))}
                 </div>
                 <ol className="pl-steps">
-                  {plan.etapes.map((e) => (
-                    <li key={e.label} style={{ '--x': pctEtape(e.pct) }}>
-                      <b>{F_HEURE.format(e.heure)}</b>
-                      <span>{fmt(e.km)} km</span>
-                      <em>{L(e.label, e.en)}</em>
-                    </li>
-                  ))}
+                  {plan.etapes.map((e) => {
+                    const memeJour = e.heure.toDateString() === plan.debut.toDateString()
+                    return (
+                      <li key={`${e.nom}-${e.km}`} className={e.depart || e.arrivee ? 'is-end' : ''}>
+                        <b className="pl-steps__h">{memeJour ? F_HEURE.format(e.heure) : F_DATE.format(e.heure)}</b>
+                        <span className="pl-steps__km">{fmt(e.km)} km</span>
+                        <span className="pl-steps__nom">
+                          {e.nom}
+                          {e.depart && <em>{L('départ', 'start')}</em>}
+                          {e.decale && <em>{L('départ décalé', 'alternative start')}</em>}
+                          {e.arrivee && <em>{L('arrivée', 'finish')}</em>}
+                        </span>
+                        <span className="pl-steps__tr">{e.troncon ? `+${fmt(e.troncon)} km` : ''}</span>
+                      </li>
+                    )
+                  })}
                 </ol>
                 <p className="pl-note">
                   <Icon name="info" size={13} />{' '}
