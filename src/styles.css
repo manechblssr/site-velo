@@ -4210,6 +4210,13 @@ main > .hero {
 .table--20 th {
   vertical-align: middle;
 }
+.table--20 tbody th,
+.table--20 tbody td {
+  vertical-align: middle;
+}
+.table--20 td.num {
+  white-space: nowrap;
+}
 .table--20 .hist {
   display: block;
   margin-left: 0;
