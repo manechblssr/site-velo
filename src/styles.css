@@ -5831,3 +5831,24 @@ main > .hero {
   .toolbar--main > .toolbar__field:has(#an-club) { order: 3; }
   .toolbar--main > .toolbar__toggle { order: 4; }
 }
+
+/* Téléphone : une fiche de flèche ouverte prend la place des outils de la carte,
+   qui sinon recouvrent sa croix et ses boutons. */
+@media (max-width: 639px) {
+  :has(> .cx-canvas .leaflet-popup) > .cx-tools,
+  :has(> .cx-canvas .leaflet-popup) > .cx-hint,
+  :has(> .cx-canvas .leaflet-popup) > .cx-legend,
+  .cx-canvas:has(.leaflet-popup) .leaflet-control-zoom {
+    display: none;
+  }
+  .fl-popup a.leaflet-popup-close-button {
+    width: 44px;
+    height: 44px;
+    top: 2px;
+    right: 2px;
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    line-height: 1;
+  }
+}
