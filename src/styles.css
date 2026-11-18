@@ -635,7 +635,7 @@ h1.t-h2 {
   border-bottom: 0;
 }
 
-/* Commutateur « mode gestionnaire » */
+/* Interrupteur */
 .switch {
   display: inline-flex;
   align-items: center;
@@ -1329,11 +1329,6 @@ main > .hero > .wrap.hero-split__in {
 .table-scroll--short {
   max-height: 340px;
   overflow-y: auto;
-}
-.tel {
-  font-size: 13px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
 }
 .fo-mini {
   display: inline-flex;
@@ -3581,28 +3576,6 @@ main > .hero {
   gap: var(--s-5);
   padding: var(--s-5) var(--s-6) var(--s-7);
 }
-.fx-contacts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-3);
-  margin: 0;
-  padding: var(--s-4);
-  background: color-mix(in oklab, #b8892a 8%, var(--bg));
-  border: 1px dashed color-mix(in oklab, #b8892a 40%, var(--line));
-  border-radius: var(--r-md);
-}
-.fx-contacts dt {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.fx-contacts dd {
-  margin: 2px 0 0;
-  font-size: 14px;
-}
-
 .fx-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3958,9 +3931,6 @@ main > .hero {
   .fx-kpis,
   .fx-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .fx-contacts {
-    grid-template-columns: minmax(0, 1fr);
   }
   .fx-ev {
     grid-template-columns: auto minmax(0, 1fr);

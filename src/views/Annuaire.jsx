@@ -39,7 +39,6 @@ export default function Annuaire({ lang, data, routeParam }) {
   const [tri, setTri] = useState('nb')
   const [sens, setSens] = useState(1) // 1 : ordre naturel de la colonne, -1 : inversé
   const [page, setPage] = useState(1)
-  const [manager, setManager] = useState(false)
   const [avances, setAvances] = useState(false) // panneau « Filtres avancés »
   const [ouvert, setOuvert] = useState(null) // participant affiché en fiche
 
@@ -213,13 +212,6 @@ export default function Annuaire({ lang, data, routeParam }) {
         { label: 'Bronze', value: (x) => x.a.B },
         { label: L('Première flèche', 'First Flèche'), value: (x) => x.a.premiere },
         { label: L('Dernière flèche', 'Last Flèche'), value: (x) => x.a.derniere },
-        ...(manager
-          ? [
-              { label: L('Téléphone', 'Phone'), value: (x) => x.p.tel },
-              { label: L('Adresse', 'Address'), value: (x) => x.p.rue },
-              { label: L('Code postal', 'Postcode'), value: (x) => x.p.cp },
-            ]
-          : []),
       ],
       liste,
     )
@@ -454,19 +446,11 @@ export default function Annuaire({ lang, data, routeParam }) {
             </button>
           )}
           <span className="result-line__actions">
-            <label className="switch">
-              <input type="checkbox" checked={manager} onChange={(e) => setManager(e.target.checked)} />
-              {t('f.manager')}
-            </label>
             <button type="button" className="btn btn--secondary btn--sm" onClick={exporter}>
               <Icon name="download" size={15} /> {t('f.export')}
             </button>
           </span>
         </div>
-
-        {manager && (
-          <p className="note">{t('f.managerNote')}</p>
-        )}
 
         {visible.length === 0 ? (
           <p className="empty">{t('e.empty')}</p>
@@ -505,7 +489,6 @@ export default function Annuaire({ lang, data, routeParam }) {
                       {p.complete && (
                         <span className="chip chip--actif chip--sous">{t('f.complete')}</span>
                       )}
-                      {manager && p.tel && <span className="tel"> · {p.tel}</span>}
                     </th>
                     <td className={tri === 'club' ? 'is-sorted' : ''} data-label={t('t.club')}>{nomClub(p.club, lang) || '—'}</td>
                     <td className={`num${tri === 'nb' ? ' is-sorted' : ''}`} data-label={t('t.nb')}>
@@ -572,7 +555,6 @@ export default function Annuaire({ lang, data, routeParam }) {
           lang={lang}
           data={data}
           participant={ouvert}
-          manager={manager}
           onFleche={(dest) => {
             setOuvert(null)
             set('fleche', dest)

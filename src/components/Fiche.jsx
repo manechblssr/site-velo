@@ -39,7 +39,7 @@ function Anneau({ n, total, L }) {
   )
 }
 
-export default function Fiche({ lang, data, participant, manager, onFleche, onClose }) {
+export default function Fiche({ lang, data, participant, onFleche, onClose }) {
   const t = makeT(lang)
   const L = pick(lang)
   const NOM = (c) => nomFormule(c, lang)
@@ -252,29 +252,6 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
         </header>
 
         <div className="fx-body">
-          {manager && (
-            <dl className="fx-contacts">
-              <div>
-                <dt>
-                  <Icon name="phone" size={14} /> {L('Téléphone', 'Phone')}
-                </dt>
-                <dd>{p.tel || '—'}</dd>
-              </div>
-              <div>
-                <dt>
-                  <Icon name="home" size={14} /> {L('Adresse', 'Address')}
-                </dt>
-                <dd>{[p.rue, p.cp].filter(Boolean).join(', ') || '—'}</dd>
-              </div>
-              <div>
-                <dt>
-                  <Icon name="cake" size={14} /> {L('Naissance', 'Born')}
-                </dt>
-                <dd>{fmtDate(p.naissance)}</dd>
-              </div>
-            </dl>
-          )}
-
           <div className="fx-kpis">
             <div className="fx-kpi">
               <Icon name="medal" size={18} />

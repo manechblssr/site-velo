@@ -60,11 +60,6 @@ const DICT = {
   ],
   'f.sort': ['Trier par', 'Sort by'],
   'f.export': ['Exporter en CSV', 'Export CSV'],
-  'f.manager': ['Mode gestionnaire local', 'Local manager mode'],
-  'f.managerNote': [
-    'Coordonnées complètes visibles (usage local uniquement).',
-    'Full contact details shown (local use only).',
-  ],
 
   // tableau annuaire
   't.name': ['Nom', 'Name'],
