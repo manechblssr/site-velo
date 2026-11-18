@@ -1937,10 +1937,11 @@ main > .hero {
   }
 }
 
-/* « En bref » : un seul panneau, plus de cartes isolées */
+/* « En bref » : un seul panneau, une seule colonne, ou une seule rangée
+   de cinq quand la largeur le permet */
 .en-bref {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -1954,10 +1955,6 @@ main > .hero {
   gap: var(--s-3);
   padding: var(--s-5);
   background: var(--surface);
-}
-/* 5 items : le dernier occupe la rangée complète au lieu de rester orphelin */
-.en-bref__item:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
 }
 .en-bref__ico {
   display: grid;
@@ -1979,12 +1976,14 @@ main > .hero {
   line-height: 1.6;
   color: var(--muted);
 }
-@media (max-width: 720px) {
+@media (min-width: 1100px) {
   .en-bref {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-  .en-bref__item:last-child:nth-child(odd) {
-    grid-column: auto;
+  .en-bref__item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-4);
+    padding: var(--s-6) var(--s-5);
   }
 }
 

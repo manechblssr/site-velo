@@ -219,8 +219,7 @@ export default function Presentation({ lang, data }) {
           <section className="section section--dense" aria-labelledby="h-encarts">
             <div className="section-head">
               <h2 id="h-encarts" className="t-h2">
-                {L('En bref', 'At a glance')}{' '}
-                <span className="muted">{L("ce qu'il faut savoir avant de partir", 'what to know before you set off')}</span>
+                {L('En bref', 'At a glance')}
               </h2>
             </div>
             <div className="en-bref">
