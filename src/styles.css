@@ -5785,3 +5785,11 @@ main > .hero {
 .tarifs {
   max-width: 640px;
 }
+
+.savoir {
+  max-width: 72ch;
+}
+.savoir__fin {
+  margin-top: var(--s-6);
+  font-weight: 600;
+}

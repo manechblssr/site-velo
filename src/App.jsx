@@ -10,6 +10,7 @@ import Annuaire from './views/Annuaire.jsx'
 import Defis from './views/Defis.jsx'
 import Clubs from './views/Clubs.jsx'
 import Evolution from './views/Evolution.jsx'
+import EnSavoirPlus from './views/EnSavoirPlus.jsx'
 
 function Shell() {
   const { status, data, error } = useData()
@@ -90,6 +91,7 @@ function Shell() {
     defis: <Defis lang={lang} data={data} routeParam={route.param} />,
     clubs: <Clubs lang={lang} data={data} />,
     evolution: <Evolution lang={lang} data={data} />,
+    savoir: <EnSavoirPlus lang={lang} />,
   }
 
   return (

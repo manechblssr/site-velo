@@ -3,8 +3,8 @@ import Icon from '../components/Icon.jsx'
 import { makeT, pick } from '../lib/i18n.js'
 import { fmt, fmtDate } from '../lib/data.js'
 
-/* Les 5 encarts de la page officielle + le texte « En savoir plus »,
-   dans la rédaction du site de l'Audax Club Parisien. */
+/* Les 5 encarts de la page officielle, dans la rédaction du site de
+   l'Audax Club Parisien. */
 
 const ENCARTS = [
   {
@@ -402,61 +402,6 @@ export default function Presentation({ lang, data }) {
                   )}
                 </p>
               </div>
-            </div>
-          </section>
-
-          <section className="section section--dense" aria-labelledby="h-savoir">
-            <div className="section-head">
-              <h2 id="h-savoir" className="t-h2">
-                {L('En savoir plus', 'Learn more')} <span className="muted">{L('le fonctionnement', 'how it works')}</span>
-              </h2>
-            </div>
-            <div className="prose">
-              <p>
-                {L(
-                  'Depuis 1954, plus de 45 000 Flèches ont été réalisées. Un cycle complet de plus de 11 000 km donne droit à une plaquette offerte par le club.',
-                  'Since 1954, more than 45,000 Flèches have been ridden. A full cycle of over 11,000 km earns a plaque offered by the club.',
-                )}
-              </p>
-              <p>
-                {L(
-                  "Le sens du parcours est libre : Paris-Province ou Province-Paris. Deux points de départ ou d'arrivée sont ouverts à votre choix : la porte de Paris ou une gare de banlieue située entre 10 et 25 km du centre.",
-                  'You choose the direction: Paris to the regions or the regions to Paris. Two start or finish points are open to you: a Paris city gate or a suburban station 10 to 25 km from the centre.',
-                )}
-              </p>
-              <p>
-                {L(
-                  'Les points Brevets de France font foi sur une grande partie du parcours : la validation de 80 % des BPF suffit à homologuer votre flèche.',
-                  'Brevets de France (BPF) checkpoints serve as proof along much of the route: validating 80% of the BPF is enough to have your Flèche validated.',
-                )}
-              </p>
-              <h3>{L('Les formules', 'The formulas')}</h3>
-              <ul>
-                <li>
-                  <b>{L('Or', 'Gold')}</b>
-                  {L(
-                    ' : le délai le plus exigeant, à réaliser sans dormir sur le parcours.',
-                    ': the toughest time limit, ridden without sleeping along the way.',
-                  )}
-                </li>
-                <li>
-                  <b>{L('Argent', 'Silver')}</b>
-                  {L(' : plus de 200 km par jour à maintenir.', ': more than 200 km a day to sustain.')}
-                </li>
-                <li>
-                  <b>Bronze</b>
-                  {L(
-                    ' : un minimum de 80 km par jour, avec dormées autorisées.',
-                    ': at least 80 km a day, with overnight stops allowed.',
-                  )}
-                </li>
-              </ul>
-              <p>
-                {L(
-                  'Vous partez avec une carte de route à tamponner chez les organisateurs. Les récompenses sont remises en janvier à Paris, ou envoyées par la poste ; la médaille est commandable en supplément.',
-                  'You set off with a route card to be stamped along the way. Awards are presented in January in Paris, or sent by post; the medal can be ordered as an extra.',
-                )}
-              </p>
             </div>
           </section>
 

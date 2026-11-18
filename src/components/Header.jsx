@@ -19,6 +19,7 @@ const VUES = [
   ['carte', 'nav.carte', 'map'],
   ['annuaire', 'nav.palmares', 'users'],
   ['defis', 'nav.defis', 'trophy'],
+  ['savoir', 'nav.savoir', 'info'],
 ]
 
 /* l'onglet « Palmarès » couvre l'annuaire, les clubs et l'évolution annuelle */

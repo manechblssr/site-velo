@@ -36,7 +36,7 @@ export function useData() {
   return ctx
 }
 
-const ROUTES = ['presentation', 'carte', 'annuaire', 'defis', 'clubs', 'evolution']
+const ROUTES = ['presentation', 'carte', 'annuaire', 'defis', 'savoir', 'clubs', 'evolution']
 
 function parseHash() {
   const raw = window.location.hash.replace(/^#\/?/, '')

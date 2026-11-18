@@ -15,6 +15,7 @@ const DICT = {
   'nav.carte': ['Carte interactive', 'Interactive map'],
   'nav.annuaire': ['Palmarès individuel', 'Individual records'],
   'nav.defis': ['Défis & Formules', 'Challenges & formulas'],
+  'nav.savoir': ['En savoir plus', 'Learn more'],
   'nav.clubs': ['Palmarès club', 'Club records'],
   'nav.palmares': ['Palmarès', 'Records'],
   'nav.evolution': ['Évolution annuelle', 'Year by year'],
