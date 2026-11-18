@@ -203,16 +203,6 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
               <Icon name="building" size={15} />
               <span>{nomClub(p.club, lang) || t('f.none')}</span>
             </li>
-            {(p.ville || p.pays) && (
-              <li>
-                <Icon name="map-pin" size={15} />
-                <span>
-                  {[p.ville, p.dept && `(${p.dept})`, p.pays && p.pays !== 'FRANCE' ? p.pays : null]
-                    .filter(Boolean)
-                    .join(' ')}
-                </span>
-              </li>
-            )}
             {(p.fede || p.code) && (
               <li>
                 <Icon name="hash" size={15} />
@@ -274,7 +264,7 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
                 <dt>
                   <Icon name="home" size={14} /> {L('Adresse', 'Address')}
                 </dt>
-                <dd>{[p.rue, p.cp, p.ville].filter(Boolean).join(', ') || '—'}</dd>
+                <dd>{[p.rue, p.cp].filter(Boolean).join(', ') || '—'}</dd>
               </div>
               <div>
                 <dt>

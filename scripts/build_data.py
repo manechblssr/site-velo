@@ -596,7 +596,7 @@ def main():
             x["catAge"] = age_band(x["ageF"]) if x["ageF"] is not None else ""
         participants.append({
             "id": p["id"], "nom": p["nom"], "prenom": p["prenom"], "sexe": p["sexe"],
-            "ville": p["ville"], "cp": p["cp"], "pays": p["pays"], "dept": p["dept"],
+            "cp": p["cp"], "pays": p["pays"], "dept": p["dept"],
             "code": p["code"], "club": p["club"], "fede": p["fede"],
             "tel": p["tel"], "rue": p["rue"],
             "naissance": rows[0]["naissance"],

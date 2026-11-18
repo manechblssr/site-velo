@@ -324,7 +324,7 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     const q = norm(quest)
     if (q.length < 3) return []
     return participants
-      .filter((p) => norm(`${p.nom} ${p.prenom} ${p.ville} ${p.club}`).includes(q))
+      .filter((p) => norm(`${p.nom} ${p.prenom} ${p.club}`).includes(q))
       .slice(0, 8)
   }, [quest, participants])
 
@@ -1103,7 +1103,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
                 <p className="civ__meta">
                   <Icon name="building" size={13} />
                   {sel.club || t('f.none')}
-                  {sel.ville ? ` · ${sel.ville}` : ''}
                 </p>
               </div>
             </div>

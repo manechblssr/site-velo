@@ -224,7 +224,7 @@ export function norm(s) {
 export function buildIndex(participants) {
   const map = new Map()
   for (const p of participants) {
-    map.set(p.id, norm(`${p.nom} ${p.prenom} ${p.ville} ${p.club} ${p.code}`))
+    map.set(p.id, norm(`${p.nom} ${p.prenom} ${p.club} ${p.code}`))
   }
   return map
 }

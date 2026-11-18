@@ -383,7 +383,6 @@ function FicheClub({ club, parClub, onClose, onGo, L }) {
                       </b>
                     </button>
                     <span className="muted">{p.sexe}</span>
-                    <span className="row-app__meta">{p.ville || '—'}</span>
                   </span>
                   <span className="row-app__meta">
                     {fmt(p.nb)} {L('flèches', 'Flèches')} · {fmt(p.km)} km · {L('O', 'G')} {fmt(p.O)} · {L('A', 'S')}{' '}

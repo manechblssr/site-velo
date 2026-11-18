@@ -37,7 +37,7 @@ const DICT = {
   'view.carte': ['La carte des 20 Flèches', 'Map of the 20 Flèches'],
 
   // filtres
-  'f.search': ['Rechercher un nom, une commune, un n°', 'Search a name, a town, a number'],
+  'f.search': ['Rechercher un nom, un club, un n°', 'Search a name, a club, a number'],
   'f.year': ['Année', 'Year'],
   'f.club': ['Club', 'Club'],
   'f.fede': ['Fédération', 'Federation'],
@@ -70,7 +70,6 @@ const DICT = {
   't.name': ['Nom', 'Name'],
   't.club': ['Club', 'Club'],
   't.fede': ['Fédération', 'Federation'],
-  't.place': ['Commune', 'Town'],
   't.sexe': ['Sexe', 'Gender'],
   't.age': ['Âge', 'Age'],
   't.nb': ['Flèches', 'Flèches'],

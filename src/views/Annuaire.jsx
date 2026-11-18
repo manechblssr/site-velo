@@ -27,8 +27,6 @@ const VIDE = {
 /* filtres regroupés dans le panneau « Filtres avancés » */
 const CLES_AVANCEES = ['fede', 'fleche', 'sexe', 'tranche', 'dept', 'pays', 'neo', 'complete']
 
-/* « (vide) » et « ? » du classeur = commune inconnue */
-const commune = (v) => (v && !/^\s*(\(vide\)|\?)\s*$/i.test(v) ? v : '')
 
 export default function Annuaire({ lang, data, routeParam }) {
   const t = makeT(lang)
@@ -114,7 +112,7 @@ export default function Annuaire({ lang, data, routeParam }) {
       if (f.pays && p.pays !== f.pays) continue
       if (f.complete && !p.complete) continue
       if (f.neo && p.premiereAnnee !== Number(f.annee || p.premiereAnnee)) continue
-      if (qq && !norm(`${p.nom} ${p.prenom} ${p.ville} ${p.club} ${p.code}`).includes(qq)) continue
+      if (qq && !norm(`${p.nom} ${p.prenom} ${p.club} ${p.code}`).includes(qq)) continue
       out.push({ p, a })
     }
 
@@ -133,7 +131,6 @@ export default function Annuaire({ lang, data, routeParam }) {
       km: (x, y) => y.a.km - x.a.km,
       nom: parNom,
       club: (x, y) => txt(nomClub(x.p.club, lang), nomClub(y.p.club, lang)),
-      ville: (x, y) => txt(commune(x.p.ville), commune(y.p.ville)),
       recent: (x, y) => (y.a.derniere || '').localeCompare(x.a.derniere || ''),
       distinctes: (x, y) => y.a.dests.size - x.a.dests.size,
     }[tri]
@@ -168,7 +165,7 @@ export default function Annuaire({ lang, data, routeParam }) {
   }
   const enTete = (cle, libelle, className = '') => {
     const actif = tri === cle
-    const croissant = ['nom', 'club', 'ville'].includes(cle) ? sens > 0 : sens < 0
+    const croissant = ['nom', 'club'].includes(cle) ? sens > 0 : sens < 0
     return (
       <th
         scope="col"
@@ -204,7 +201,6 @@ export default function Annuaire({ lang, data, routeParam }) {
         { label: L('Club', 'Club'), value: (x) => x.p.club },
         { label: L('Code club', 'Club code'), value: (x) => x.p.code },
         { label: L('Fédération', 'Federation'), value: (x) => x.p.fede },
-        { label: L('Commune', 'Town'), value: (x) => x.p.ville },
         { label: L('Département', 'Department'), value: (x) => x.p.dept },
         { label: L('Pays', 'Country'), value: (x) => x.p.pays },
         { label: L('Tranche âge', 'Age band'), value: (x) => x.p.tranche },
@@ -260,7 +256,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               id="an-q"
               type="search"
               value={q}
-              placeholder="Dupont, Luchon, 92100…"
+              placeholder="Dupont, Audax Club Parisien, 1234…"
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
@@ -411,7 +407,6 @@ export default function Annuaire({ lang, data, routeParam }) {
               >
                 <option value="nb">{L('Nombre de flèches', 'Number of Flèches')}</option>
                 <option value="club">{L('Club (A → Z)', 'Club (A → Z)')}</option>
-                <option value="ville">{L('Commune (A → Z)', 'Town (A → Z)')}</option>
                 <option value="distinctes">{L('Flèches distinctes', 'Distinct Flèches')}</option>
                 <option value="km">{L('Kilomètres', 'Kilometres')}</option>
                 <option value="recent">{L('Dernière participation', 'Most recent ride')}</option>
@@ -485,7 +480,6 @@ export default function Annuaire({ lang, data, routeParam }) {
                   </th>
                   {enTete('nom', t('t.name'), 'th-click--left')}
                   {enTete('club', t('t.club'), 'th-click--left')}
-                  {enTete('ville', t('t.place'), 'th-click--left')}
                   {enTete('nb', t('t.nb'), 'num')}
                   <th scope="col" className="num">
                     {L('Distinctes', 'Distinct')}
@@ -514,13 +508,6 @@ export default function Annuaire({ lang, data, routeParam }) {
                       {manager && p.tel && <span className="tel"> · {p.tel}</span>}
                     </th>
                     <td className={tri === 'club' ? 'is-sorted' : ''} data-label={t('t.club')}>{nomClub(p.club, lang) || '—'}</td>
-                    <td className={tri === 'ville' ? 'is-sorted' : ''} data-label={t('t.place')}>
-                      {commune(p.ville) || '—'}
-                      {p.dept ? <span className="muted"> ({p.dept})</span> : null}
-                      {p.pays && !/^france$/i.test(p.pays) ? (
-                        <span className="muted"> · {p.pays}</span>
-                      ) : null}
-                    </td>
                     <td className={`num${tri === 'nb' ? ' is-sorted' : ''}`} data-label={t('t.nb')}>
                       <b className="nb-dist">{a.nb}</b>
                     </td>
