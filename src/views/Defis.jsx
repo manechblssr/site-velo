@@ -894,26 +894,12 @@ function Express({ defis }) {
   const L = useL()
   const lang = useLang()
   const liste = defis.express ?? []
-  const aVerifier = defis.expressAVerifier ?? []
-  const plusRapide = liste.filter((e) => e.mode === 'dates').sort((a, b) => a.jours - b.jours)[0]
   return (
     <>
       <div className="kpis kpis--complete">
         <div className="kpi">
           <b className="kpi__v">{liste.length}</b>
           <span className="kpi__l">{L('Complètes express (20 Flèches en 12 mois)', 'Express Completes (20 Flèches in 12 months)')}</span>
-        </div>
-        <div className="kpi">
-          <b className="kpi__v">{plusRapide ? `${plusRapide.jours} j` : '—'}</b>
-          <span className="kpi__l">
-            {plusRapide
-              ? L(`La plus rapide (${plusRapide.nom})`, `Fastest (${plusRapide.nom})`)
-              : L('La plus rapide', 'Fastest')}
-          </span>
-        </div>
-        <div className="kpi">
-          <b className="kpi__v">{aVerifier.length}</b>
-          <span className="kpi__l">{L('Cas à vérifier (dates inconnues)', 'Cases to check (dates unknown)')}</span>
         </div>
       </div>
 
@@ -924,8 +910,6 @@ function Express({ defis }) {
               <th scope="col">{L('Cycliste', 'Rider')}</th>
               <th scope="col">{L('Période des 20 Flèches', 'Period of the 20 Flèches')}</th>
               <th scope="col" className="num">{L('Durée', 'Duration')}</th>
-              <th scope="col" className="num">{L('Homologations', 'Validated rides')}</th>
-              <th scope="col" className="num">Km</th>
             </tr>
           </thead>
           <tbody>
@@ -948,46 +932,10 @@ function Express({ defis }) {
                 <td data-label={L('Durée', 'Duration')} className="num">
                   {e.mode === 'dates' ? L(`${e.jours} jours`, `${e.jours} days`) : L('≤ 12 mois', '≤ 12 months')}
                 </td>
-                <td data-label={L('Homologations', 'Validated rides')} className="num">
-                  {e.nb}
-                </td>
-                <td data-label="Km" className="num">
-                  {fmt(e.km)}
-                </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {aVerifier.length > 0 && (
-        <div className="empty-metal">
-          <p>
-            <b>{L('À vérifier', 'To check')}</b>{' '}
-            {L(
-              "— les 20 Flèches sur deux millésimes consécutifs, mais le classeur ne donne que l'année : impossible de savoir si elles tiennent en 12 mois. Ces cas ne sont pas comptés.",
-              '— all 20 Flèches over two consecutive seasons, but the workbook only gives the year: no way to tell whether they fit in 12 months. These cases are not counted.',
-            )}
-          </p>
-          <ul className="proches">
-            {aVerifier.map((e) => (
-              <li key={e.id}>
-                <a className="link" href={`#/annuaire/pid=${e.id}`}>
-                  <b>{e.nom}</b>
-                </a>
-                <span className="muted proches__club">{nomClub(e.club, lang) || L('Sans club', 'No club')}</span>
-                <span className="muted">{e.annees.join(' + ')}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="note">
-        {L(
-          "Règle : les 20 Flèches homologuées en 12 mois au plus. Le calcul porte sur tout le journal : pour les homologations datées (depuis 2022), on cherche la plus courte période de moins de 12 mois contenant les 20 destinations, même à cheval sur deux saisons ; pour les éditions anciennes, seule l'année est connue et les 20 Flèches doivent figurer dans un même millésime.",
-          'Rule: all 20 Flèches validated within 12 months at most. The whole log is scanned: for dated rides (since 2022), we look for the shortest period under 12 months containing the 20 destinations, even across two seasons; for older editions only the year is known and the 20 Flèches must fall in a single season.',
-        )}
       </div>
     </>
   )
@@ -1020,7 +968,7 @@ function Combine() {
       <p>
         <a
           className="btn btn--secondary"
-          href="https://www.audax-club-parisien.com/organisation/les-relais-de-france/"
+          href="https://www.audax-club-parisien.com/organisation/relais-de-france/"
           target="_blank"
           rel="noreferrer"
         >
