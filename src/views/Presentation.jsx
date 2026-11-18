@@ -341,7 +341,7 @@ export default function Presentation({ lang, data }) {
           <section className="section section--dense" aria-labelledby="h-tarifs">
             <div className="section-head">
               <h2 id="h-tarifs" className="t-h2">
-                {L('Les tarifs', 'Fees')} <span className="muted">{L('et la carte de route', 'and the route card')}</span>
+                {L('Les tarifs', 'Fees')}
               </h2>
             </div>
             <div className="tarifs">
