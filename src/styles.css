@@ -5621,3 +5621,213 @@ main > .hero {
   font-size: 14px;
   margin: 4px 0 0;
 }
+
+/* Téléphone : les grands tableaux deviennent des fiches, les en-têtes triables
+   une barre de tri qui défile au doigt. */
+@media (max-width: 639px) {
+  .table-scroll:has(.table-app--mob) {
+    overflow: visible;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .table-app--mob,
+  .table-app--mob tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .table-app--mob thead {
+    display: block;
+    margin-bottom: var(--s-2);
+  }
+  .table-app--mob thead tr {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 0 6px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-app--mob thead tr::-webkit-scrollbar {
+    display: none;
+  }
+  .table-app--mob thead th {
+    display: none;
+  }
+  .table-app--mob thead th.th-click {
+    display: block;
+    flex: none;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .table-app--mob thead .th-sort {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--bg);
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .table-app--mob thead .th-sort.is-active {
+    border-color: var(--action);
+    color: var(--action);
+    background: color-mix(in oklab, var(--action) 8%, var(--bg));
+  }
+  .table-app--mob tbody tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px var(--s-3);
+    padding: 14px 16px;
+    margin-bottom: var(--s-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+  }
+  .table-app--mob tbody tr:hover {
+    background: var(--bg);
+  }
+  .table-app--mob tbody th,
+  .table-app--mob tbody td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    white-space: normal;
+  }
+  .table-app--mob tbody th {
+    grid-column: 1 / -1;
+    padding-right: 48px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .table-app--mob tbody td {
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+  .table-app--mob tbody td.num {
+    text-align: left;
+    white-space: nowrap;
+  }
+  .table-app--mob tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 1px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .table-app--mob tbody td.cell-wide {
+    grid-column: 1 / -1;
+  }
+  .table-app--mob tbody td.empty {
+    grid-column: 1 / -1;
+  }
+  .table-app--mob tbody td.col-rang {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    min-width: 32px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .table-app--mob tbody td.col-rang::before {
+    content: '#';
+    display: inline;
+    font-size: inherit;
+    color: var(--muted);
+  }
+  .table-app--mob tbody td.is-sorted {
+    background: none;
+  }
+
+  .table-app--mob-annuaire tbody td.cell-action {
+    display: none;
+  }
+  .table-app--mob-annuaire tbody th .chip--sous {
+    margin-top: 6px;
+  }
+
+  .table-app--mob-clubs tbody tr {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .table-app--mob-clubs tbody td.cell-code {
+    grid-column: 1 / -1;
+    margin-top: -6px;
+    font-size: 13px;
+  }
+  .table-app--mob-clubs tbody td.cell-code::before {
+    display: none;
+  }
+
+  .table-app--mob-20 tbody tr {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    cursor: pointer;
+  }
+  .table-app--mob-20 tbody th {
+    padding-right: 0;
+  }
+  .table-app--mob-20 tbody td.cell-depart {
+    grid-column: span 2;
+  }
+  .table-app--mob-20 tbody td.cell-depart .hist {
+    display: inline;
+    margin-left: 4px;
+  }
+  .table-app--mob-20 tbody td.res {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .table-app--mob-20 tbody td.res a {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+  .table-app--mob-20 tbody td.res .ref-go {
+    display: none;
+  }
+
+  .cta-float {
+    left: 16px;
+    right: 16px;
+    justify-content: center;
+    min-height: 48px;
+  }
+  body:has(.cta-float) .footer,
+  body:has(.cta-float) footer {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 639px) {
+  .toolbar--main {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .toolbar--main > * {
+    min-width: 0;
+  }
+  .toolbar--main > .toolbar__field--wide,
+  .toolbar--main > .toolbar__field:has(#an-club),
+  .toolbar--main > .toolbar__toggle {
+    grid-column: 1 / -1;
+  }
+  .toolbar--main > .toolbar__field:has(#an-annee) { order: 1; }
+  .toolbar--main > .toolbar__field:has(#an-formule) { order: 2; }
+  .toolbar--main > .toolbar__field:has(#an-club) { order: 3; }
+  .toolbar--main > .toolbar__toggle { order: 4; }
+}

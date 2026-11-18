@@ -282,7 +282,7 @@ export default function Presentation({ lang, data }) {
               )}
             </p>
             <div className="table-scroll">
-              <table className="table-app table--20">
+              <table className="table-app table--20 table-app--mob table-app--mob-20">
                 <caption className="sr-only">
                   {L('Tableau officiel des 20 Flèches de France 2026', 'Official table of the 20 Flèches de France 2026')}
                 </caption>
@@ -328,12 +328,12 @@ export default function Presentation({ lang, data }) {
                             {f.nom}
                           </a>
                         </th>
-                        <td className="num">{fmt(f.km)} km</td>
-                        <td className="num">{fmt(f.dplus)} m</td>
-                        <td>{f.delais.O}</td>
-                        <td>{f.delais.A}</td>
-                        <td>{f.delais.B}</td>
-                        <td>
+                        <td className="num" data-label="Distance">{fmt(f.km)} km</td>
+                        <td className="num" data-label="D+">{fmt(f.dplus)} m</td>
+                        <td data-label={L('Délai Or', 'Gold limit')}>{f.delais.O}</td>
+                        <td data-label={L('Délai Argent', 'Silver limit')}>{f.delais.A}</td>
+                        <td data-label={L('Délai Bronze', 'Bronze limit')}>{f.delais.B}</td>
+                        <td className="cell-depart" data-label={L('Départ décalé', 'Alternative start')}>
                           {f.depart.commune}
                           <span className="hist"> {fmt(f.depart.km)} km</span>
                         </td>

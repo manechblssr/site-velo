@@ -477,7 +477,7 @@ export default function Annuaire({ lang, data, routeParam }) {
           <p className="empty">{t('e.empty')}</p>
         ) : (
           <div className="table-scroll">
-            <table className="table-app table-app--lite">
+            <table className="table-app table-app--lite table-app--mob table-app--mob-annuaire">
               <thead>
                 <tr>
                   <th scope="col" className="num col-rang">
@@ -499,7 +499,7 @@ export default function Annuaire({ lang, data, routeParam }) {
               <tbody>
                 {visible.map(({ p, a }) => (
                   <tr key={p.id}>
-                    <td className="num col-rang">{rangs.get(a.nb)}</td>
+                    <td className="num col-rang" data-label={L('Rang', 'Rank')}>{rangs.get(a.nb)}</td>
                     <th scope="row">
                       <button
                         type="button"
@@ -513,22 +513,22 @@ export default function Annuaire({ lang, data, routeParam }) {
                       )}
                       {manager && p.tel && <span className="tel"> · {p.tel}</span>}
                     </th>
-                    <td className={tri === 'club' ? 'is-sorted' : ''}>{nomClub(p.club, lang) || '—'}</td>
-                    <td className={tri === 'ville' ? 'is-sorted' : ''}>
+                    <td className={tri === 'club' ? 'is-sorted' : ''} data-label={t('t.club')}>{nomClub(p.club, lang) || '—'}</td>
+                    <td className={tri === 'ville' ? 'is-sorted' : ''} data-label={t('t.place')}>
                       {commune(p.ville) || '—'}
                       {p.dept ? <span className="muted"> ({p.dept})</span> : null}
                       {p.pays && !/^france$/i.test(p.pays) ? (
                         <span className="muted"> · {p.pays}</span>
                       ) : null}
                     </td>
-                    <td className={`num${tri === 'nb' ? ' is-sorted' : ''}`}>
+                    <td className={`num${tri === 'nb' ? ' is-sorted' : ''}`} data-label={t('t.nb')}>
                       <b className="nb-dist">{a.nb}</b>
                     </td>
-                    <td className="num">
+                    <td className="num" data-label={L('Distinctes', 'Distinct')}>
                       {a.dests.size}
                       <span className="muted"> / {fleches.length}</span>
                     </td>
-                    <td>
+                    <td className="cell-wide" data-label={t('t.formule')}>
                       <span className="fo-mini">
                         <Badge code="O" />
                         <b>{a.O}</b>

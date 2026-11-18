@@ -169,7 +169,7 @@ export default function Clubs() {
         </div>
 
         <div className="table-scroll">
-          <table className="table-app">
+          <table className="table-app table-app--mob table-app--mob-clubs">
             <caption className="sr-only">{L('Classement des clubs des Flèches de France', 'Flèches de France club ranking')}</caption>
             <thead>
               <tr>
@@ -184,7 +184,7 @@ export default function Clubs() {
             <tbody>
               {visible.map((c, i) => (
                 <tr key={`${c.nom}-${c.code}`}>
-                  <td className="num">{(pageSure - 1) * PAR_PAGE + i + 1}</td>
+                  <td className="num col-rang" data-label={L('Rang', 'Rank')}>{(pageSure - 1) * PAR_PAGE + i + 1}</td>
                   <th scope="row">
                     <button
                       type="button"
@@ -195,9 +195,9 @@ export default function Clubs() {
                       {c.nom}
                     </button>
                   </th>
-                  <td className="muted">{c.code || '—'}</td>
+                  <td className="muted cell-code" data-label="Code">{c.code || '—'}</td>
                   {COLS.map((col) => (
-                    <td key={col.key} className={`num${sortBy === col.key ? ' is-sorted' : ''}`}>
+                    <td key={col.key} className={`num${sortBy === col.key ? ' is-sorted' : ''}`} data-label={col.key === 'km' || col.key === 'B' ? col.label : L(col.label, col.en)}>
                       {fmt(c[col.key])}
                     </td>
                   ))}
