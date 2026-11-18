@@ -13,8 +13,8 @@ const ONGLETS = [
   ],
   [
     'pionnier', 'Le pionnier', 'The pioneer', 'flag',
-    'Le premier cycliste à avoir réalisé chaque Flèche dans chaque formule, et les formules restées vierges jusqu’en 2025.',
-    'The first rider to complete each Flèche in each formula, and the formulas nobody achieved until 2025.',
+    'Le premier cycliste à avoir réalisé chaque Flèche dans chaque formule, et les formules encore vierges.',
+    'The first rider to complete each Flèche in each formula, and the formulas nobody has achieved yet.',
   ],
   [
     'complete', 'La Complète', 'The Complete', 'trophy',
@@ -130,7 +130,7 @@ export default function Defis({ lang, data, routeParam = '' }) {
         <div id={`pan-${onglet}`} role="tabpanel" aria-labelledby={`tab-${onglet}`} className="defis-pan">
           <p className="defis-intro">{L(actif[4], actif[5])}</p>
           {onglet === 'formules' && (
-            <ParFormule homologations={homologations} fleches={fleches} lang={lang} />
+            <ParFormule homologations={homologations} fleches={fleches} participants={participants} lang={lang} />
           )}
           {onglet === 'pionnier' && (
             <Pionnier fleches={fleches} homologations={homologations} participants={participants} />
@@ -204,7 +204,7 @@ function Resultbar({ innerRef, children, actions }) {
   )
 }
 
-function ParFormule({ homologations, fleches, lang }) {
+function ParFormule({ homologations, fleches, participants, lang }) {
   const t = makeT(lang)
   const L = useL()
   const [formule, setFormule] = useState('O')
@@ -215,14 +215,20 @@ function ParFormule({ homologations, fleches, lang }) {
   const changerPage = useChangerPage(haut, setPage)
 
   const nomFleche = useMemo(() => new Map(fleches.map((f) => [f.id, f.nom])), [fleches])
+  const byId = useMemo(() => new Map(participants.map((p) => [p.id, p])), [participants])
+  const nomP = (h) => {
+    const p = byId.get(h.pid)
+    return p ? `${p.nom} ${p.prenom}` : ''
+  }
 
   /* filtres hors formule : sert aussi aux compteurs des trois boutons */
   const base = useMemo(() => {
     const qq = norm(q)
     return homologations
       .filter((h) => !fleche || h.dest === fleche)
-      .filter((h) => !qq || norm(`${h.dest} ${h.club} ${h.num} ${h.annee}`).includes(qq))
-  }, [homologations, fleche, q])
+      .filter((h) => !qq || norm(`${nomP(h)} ${h.dest} ${h.club} ${h.num} ${h.annee}`).includes(qq))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [homologations, fleche, q, byId])
 
   const parCode = useMemo(() => {
     const r = { O: 0, A: 0, B: 0 }
@@ -245,6 +251,8 @@ function ParFormule({ homologations, fleches, lang }) {
     downloadCSV(
       `formule-${formule}${fleche ? `-${fleche}` : ''}.csv`,
       [
+        { label: L('Nom', 'Last name'), value: (h) => byId.get(h.pid)?.nom ?? '' },
+        { label: L('Prénom', 'First name'), value: (h) => byId.get(h.pid)?.prenom ?? '' },
         { label: L('Date', 'Date'), value: (h) => h.date },
         { label: L('Millésime', 'Season'), value: (h) => h.annee },
         { label: L("N° d'homologation", 'Record no.'), value: (h) => h.num },
@@ -296,7 +304,7 @@ function ParFormule({ homologations, fleches, lang }) {
             id="pf-q"
             type="search"
             value={q}
-            placeholder={L("Club, n° d'homologation, année…", 'Club, record no., year…')}
+            placeholder={L("Nom, club, n° d'homologation, année…", 'Name, club, record no., year…')}
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
@@ -336,6 +344,7 @@ function ParFormule({ homologations, fleches, lang }) {
             <thead>
               <tr>
                 <th scope="col">{t('f.fleche')}</th>
+                <th scope="col">{L('Fléchard', 'Rider')}</th>
                 <th scope="col">{t('t.date')}</th>
                 <th scope="col">{t('t.year')}</th>
                 <th scope="col" className="num">{t('t.num')}</th>
@@ -347,6 +356,15 @@ function ParFormule({ homologations, fleches, lang }) {
               {visible.map((h, i) => (
                 <tr key={`${h.pid}-${h.num}-${(pageSure - 1) * PAR_PAGE + i}`}>
                   <th scope="row">{nomFleche.get(h.dest) ?? h.dest}</th>
+                  <td data-label={L('Fléchard', 'Rider')} className="cell-wide">
+                    {byId.has(h.pid) ? (
+                      <a className="link" href={`#/annuaire/pid=${h.pid}`}>
+                        {nomP(h)}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td data-label={t('t.date')}>{fmtDate(h.date)}</td>
                   <td data-label={t('t.year')}>{h.annee}</td>
                   <td data-label={t('t.num')} className="num">{h.num ?? '—'}</td>
@@ -417,24 +435,28 @@ function Pionnier({ fleches, homologations, participants }) {
     return m
   }, [homologations])
 
+  const derniere = useMemo(() => Math.max(...homologations.map((h) => h.annee)), [homologations])
+
   const vierges = useMemo(
     () =>
       VIERGES.map(([dest, fo]) => {
         const rows = homologations.filter((h) => h.dest === dest && h.formule === fo)
+        const premier = pioneer.get(`${dest}|${fo}`) ?? null
         return {
           dest,
           formule: fo,
-          vierge: !rows.some((h) => h.annee >= 1997 && h.annee <= 2025),
-          premier: pioneer.get(`${dest}|${fo}`) ?? null,
-          apres2025: rows.filter((h) => h.annee > 2025).length,
+          vierge: rows.length === 0,
+          premier,
+          annee: premier?.annee ?? null,
+          nb: rows.length,
         }
       }),
     [homologations, pioneer],
   )
 
   const totalAvant = useMemo(
-    () => homologations.filter((h) => h.annee >= 1997 && h.annee <= 2025).length,
-    [homologations],
+    () => homologations.filter((h) => h.annee >= 1997 && h.annee <= derniere).length,
+    [homologations, derniere],
   )
 
   const nomFleche = (id) => fleches.find((f) => f.id === id)?.nom ?? id
@@ -465,11 +487,11 @@ function Pionnier({ fleches, homologations, participants }) {
       <div className="kpis">
         <div className="kpi">
           <b className="kpi__v">{fmt(totalAvant)}</b>
-          <span className="kpi__l">{L('Flèches homologuées entre 1997 et 2025', 'Flèches validated between 1997 and 2025')}</span>
+          <span className="kpi__l">{L(`Flèches homologuées entre 1997 et ${derniere}`, `Flèches validated between 1997 and ${derniere}`)}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{vierges.filter((v) => v.vierge).length}</b>
-          <span className="kpi__l">{L('Formules vierges sur la période', 'Formulas never achieved in that period')}</span>
+          <span className="kpi__l">{L('Formules encore vierges', 'Formulas still unachieved')}</span>
         </div>
         <div className="kpi">
           <b className="kpi__v">{fleches.length * 3}</b>
@@ -478,7 +500,7 @@ function Pionnier({ fleches, homologations, participants }) {
       </div>
 
       <h3 className="t-h3 fiche-h">
-        {L('Les 5 formules réputées vierges (1997 → 2025)', 'The 5 formulas reported as never achieved (1997 → 2025)')}
+        {L('Les 5 formules longtemps vierges', 'The 5 long-unachieved formulas')}
       </h3>
       <div className="table-scroll">
         <table className="table-app table-app--stack">
@@ -486,10 +508,10 @@ function Pionnier({ fleches, homologations, participants }) {
             <tr>
               <th scope="col">{L('Flèche', 'Flèche')}</th>
               <th scope="col">{L('Formule', 'Formula')}</th>
-              <th scope="col">{L('Vierge 1997-2025', 'Unachieved 1997-2025')}</th>
+              <th scope="col">{L('Statut', 'Status')}</th>
               <th scope="col">{L('Premier lauréat', 'First achiever')}</th>
               <th scope="col" className="num">
-                {L('Homologations après 2025', 'Validated rides after 2025')}
+                {L('Homologations', 'Validated rides')}
               </th>
             </tr>
           </thead>
@@ -500,15 +522,15 @@ function Pionnier({ fleches, homologations, participants }) {
                 <td data-label={L('Formule', 'Formula')}>
                   <Badge code={v.formule} />
                 </td>
-                <td data-label={L('1997-2025', '1997-2025')}>
+                <td data-label={L('Statut', 'Status')}>
                   {v.vierge ? (
-                    <span className="chip">{L('vierge', 'unachieved')}</span>
+                    <span className="chip">{L('encore vierge', 'still unachieved')}</span>
                   ) : (
-                    <span className="chip chip--actif">{L('attribuée', 'achieved')}</span>
+                    <span className="chip chip--actif">{L(`réalisée · millésime ${v.annee}`, `achieved · ${v.annee} season`)}</span>
                   )}
                 </td>
                 <td data-label={L('Premier lauréat', 'First achiever')} className="cell-wide">{v.premier ? <Laureat h={v.premier} /> : '—'}</td>
-                <td data-label={L('Après 2025', 'After 2025')} className="num">{v.apres2025}</td>
+                <td data-label={L('Homologations', 'Validated rides')} className="num">{v.nb}</td>
               </tr>
             ))}
           </tbody>
