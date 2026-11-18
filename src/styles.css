@@ -1242,8 +1242,7 @@ main > .hero > .wrap.hero-split__in {
   margin-top: var(--s-1);
 }
 .defi-figures,
-.tarif-note,
-.build-note {
+.tarif-note {
   margin-top: var(--s-4);
 }
 

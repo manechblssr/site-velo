@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import Icon from '../components/Icon.jsx'
 import { makeT, pick } from '../lib/i18n.js'
-import { fmt, fmtDate } from '../lib/data.js'
+import { fmt } from '../lib/data.js'
 
 /* Les 5 encarts de la page officielle, dans la rédaction du site de
    l'Audax Club Parisien. */
@@ -408,8 +408,7 @@ export default function Presentation({ lang, data }) {
           <section className="section section--dense" aria-labelledby="h-reglement">
             <div className="section-head">
               <h2 id="h-reglement" className="t-h2">
-                {L('Règlement & contacts', 'Rules & contacts')}{' '}
-                <span className="muted">{L('documents officiels', 'official documents')}</span>
+                {L('Règlement & contacts', 'Rules & contacts')}
               </h2>
             </div>
             <div className="split-pair">
@@ -455,12 +454,6 @@ export default function Presentation({ lang, data }) {
                 </p>
               </div>
             </div>
-            <p className="t-small muted build-note">
-              {L(
-                `Base du ${fmtDate(meta.build)} · ${fmt(meta.homologations)} homologations · ${fmt(meta.participants)} participants · ${fmt(meta.clubs)} clubs.`,
-                `Data as of ${fmtDate(meta.build)} · ${fmt(meta.homologations)} validated rides · ${fmt(meta.participants)} riders · ${fmt(meta.clubs)} clubs.`,
-              )}
-            </p>
           </section>
         </div>
       </div>
