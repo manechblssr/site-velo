@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Sidebar from '../components/Sidebar.jsx'
 import Icon from '../components/Icon.jsx'
 import Planificateur from '../components/Planificateur.jsx'
 import { makeT, pick } from '../lib/i18n.js'
@@ -143,29 +142,6 @@ export default function Presentation({ lang, data }) {
     cible.scrollIntoView({ behavior: reduit ? 'auto' : 'smooth', block: 'start' })
   }
 
-  const notes = [
-    {
-      date: '2026',
-      texte: `${fmt(meta.homologations)} homologations dans la base, ${fmt(meta.participants)} fléchards.`,
-      en: `${fmt(meta.homologations)} validated rides in the database, ${fmt(meta.participants)} riders.`,
-    },
-    {
-      date: L('Défi', 'Challenge'),
-      texte: `${defis.complete.length} lauréats de La Complète (20 flèches sur le cycle complet).`,
-      en: `${defis.complete.length} finishers of The Complete (all 20 Flèches over the full cycle).`,
-    },
-    {
-      date: L('Règlement', 'Rules'),
-      texte: 'Version en vigueur au 23 décembre 2025 (PDF ci-dessous).',
-      en: 'Version in force as of 23 December 2025 (PDF below, in French).',
-    },
-    {
-      date: L('Vierges', 'Unachieved'),
-      texte: '5 formules sans lauréat entre 1997 et 2025 : Briançon, Hendaye, Luchon et Marseille.',
-      en: '5 formulas with no finisher between 1997 and 2025: Briançon, Hendaye, Luchon and Marseille.',
-    },
-  ]
-
   return (
     <>
       <section className="hero hero-split" data-enter>
@@ -180,12 +156,7 @@ export default function Presentation({ lang, data }) {
               )}
             </p>
             <p className="hero-facts">
-              <b>{L(`${fleches.length} parcours`, `${fleches.length} routes`)}</b> ·{' '}
-              {L(
-                `${fmt(meta.homologations)} homologations depuis ${meta.annees[0]}`,
-                `${fmt(meta.homologations)} validated rides since ${meta.annees[0]}`,
-              )}{' '}
-              · {defis.complete.length} {L('La Complète', 'Complete finishers')}
+              <b>{fleches.length} {L('flèches', 'Flèches')}</b> · {fmt(fleches.reduce((s, f) => s + f.km, 0))} km
             </p>
             <div className="btn-row">
               <a
@@ -569,8 +540,6 @@ export default function Presentation({ lang, data }) {
             </p>
           </section>
         </div>
-
-        <Sidebar lang={lang} notes={notes} />
       </div>
 
       {/* bouton d'inscription fixé en bas à gauche de l'écran */}
