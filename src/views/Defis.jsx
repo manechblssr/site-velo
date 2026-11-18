@@ -454,10 +454,6 @@ function Pionnier({ fleches, homologations, participants }) {
     [homologations, pioneer],
   )
 
-  const totalAvant = useMemo(
-    () => homologations.filter((h) => h.annee >= 1997 && h.annee <= derniere).length,
-    [homologations, derniere],
-  )
 
   const nomFleche = (id) => fleches.find((f) => f.id === id)?.nom ?? id
 
@@ -484,21 +480,6 @@ function Pionnier({ fleches, homologations, participants }) {
 
   return (
     <>
-      <div className="kpis">
-        <div className="kpi">
-          <b className="kpi__v">{fmt(totalAvant)}</b>
-          <span className="kpi__l">{L(`Flèches homologuées entre 1997 et ${derniere}`, `Flèches validated between 1997 and ${derniere}`)}</span>
-        </div>
-        <div className="kpi">
-          <b className="kpi__v">{vierges.filter((v) => v.vierge).length}</b>
-          <span className="kpi__l">{L('Formules encore vierges', 'Formulas still unachieved')}</span>
-        </div>
-        <div className="kpi">
-          <b className="kpi__v">{fleches.length * 3}</b>
-          <span className="kpi__l">{L('Duos flèche × formule suivis', 'Flèche × formula pairs tracked')}</span>
-        </div>
-      </div>
-
       <h3 className="t-h3 fiche-h">
         {L('Les 5 formules longtemps vierges', 'The 5 long-unachieved formulas')}
       </h3>
@@ -537,7 +518,7 @@ function Pionnier({ fleches, homologations, participants }) {
         </table>
       </div>
 
-      <h3 className="t-h3 fiche-h">{L('Premier lauréat de chaque duo flèche × formule', 'First achiever of each Flèche × formula pair')}</h3>
+      <h3 className="t-h3 fiche-h">{L(`Premier lauréat par formule (de 1997 à ${derniere})`, `First achiever per formula (1997 to ${derniere})`)}</h3>
       <div className="table-scroll">
         <table className="table-app table-app--stack">
           <thead>
