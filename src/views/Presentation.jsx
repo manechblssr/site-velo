@@ -281,12 +281,6 @@ export default function Presentation({ lang, data }) {
                 'Click a Flèche to open it on the map with its detailed profile.',
               )}
             </p>
-            <p className="note">
-              {L(
-                "Les distances et dénivelés ci-dessous font foi pour l'édition 2026. Les valeurs historiques enregistrées sur chaque homologation restent consultables sur la fiche de chaque flèche et dans l'annuaire.",
-                'The distances and elevation gains below are authoritative for the 2026 edition. The historical values recorded with each validated ride remain available on each Flèche’s profile and in the directory.',
-              )}
-            </p>
             <div className="table-scroll">
               <table className="table-app table--20">
                 <caption className="sr-only">
@@ -310,7 +304,6 @@ export default function Presentation({ lang, data }) {
                 </thead>
                 <tbody>
                   {fleches.map((f) => {
-                    const ecart = f.hist?.km && f.hist.km !== f.km
                     /* toute la ligne mène à la carte avec la fiche de la flèche
                        ouverte ; les liens de ressources gardent leur action */
                     const versCarte = (e) => {
@@ -335,18 +328,8 @@ export default function Presentation({ lang, data }) {
                             {f.nom}
                           </a>
                         </th>
-                        <td className="num">
-                          {fmt(f.km)} km
-                          {ecart && (
-                            <span className="hist"> {L(`${fmt(f.hist.km)} km avant`, `${fmt(f.hist.km)} km before`)}</span>
-                          )}
-                        </td>
-                        <td className="num">
-                          {fmt(f.dplus)} m
-                          {f.hist?.dplus && f.hist.dplus !== f.dplus && (
-                            <span className="hist"> {L(`${fmt(f.hist.dplus)} m avant`, `${fmt(f.hist.dplus)} m before`)}</span>
-                          )}
-                        </td>
+                        <td className="num">{fmt(f.km)} km</td>
+                        <td className="num">{fmt(f.dplus)} m</td>
                         <td>{f.delais.O}</td>
                         <td>{f.delais.A}</td>
                         <td>{f.delais.B}</td>
