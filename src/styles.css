@@ -5763,3 +5763,7 @@ main > .hero {
     line-height: 1;
   }
 }
+
+.tarifs {
+  max-width: 640px;
+}

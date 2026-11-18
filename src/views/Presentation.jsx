@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import Icon from '../components/Icon.jsx'
-import Planificateur from '../components/Planificateur.jsx'
 import { makeT, pick } from '../lib/i18n.js'
 import { fmt, fmtDate } from '../lib/data.js'
 
@@ -98,7 +97,6 @@ export default function Presentation({ lang, data }) {
   const t = makeT(lang)
   const L = pick(lang)
   const { fleches, meta, defis, homologations } = data
-  const [planif, setPlanif] = useState(false)
   const cue = useRef(null)
 
   const pionnier = useMemo(
@@ -346,7 +344,7 @@ export default function Presentation({ lang, data }) {
                 {L('Les tarifs', 'Fees')} <span className="muted">{L('et la carte de route', 'and the route card')}</span>
               </h2>
             </div>
-            <div className="split-pair">
+            <div className="tarifs">
               <div>
                 <ul className="rows">
                   {TARIFS.map(([libelle, en, prix]) => (
@@ -358,31 +356,10 @@ export default function Presentation({ lang, data }) {
                 </ul>
                 <p className="t-small muted tarif-note">
                   {L(
-                    'Tarifs 2025 publiés par le club ; médaille facultative disponible auprès du secrétariat.',
-                    '2025 fees published by the club; an optional medal is available from the secretariat.',
+                    'Tarifs 2026 publiés par le club ; médaille facultative disponible auprès du secrétariat.',
+                    '2026 fees published by the club; an optional medal is available from the secretariat.',
                   )}
                 </p>
-              </div>
-              <div className="encart encart--action">
-                <h3>{L('Planifiez votre Flèche', 'Plan your Flèche')}</h3>
-                <p>
-                  {L(
-                    "Choisissez une flèche et une formule : délais, allure minimale et repères horaires s'affichent directement sur cette page, sans classeur.",
-                    'Pick a Flèche and a formula: time limits, minimum pace and timing checkpoints appear right on this page, no spreadsheet needed.',
-                  )}
-                </p>
-                <div className="btn-row">
-                  <button type="button" className="btn btn--primary" onClick={() => setPlanif(true)}>
-                    <Icon name="calculator" size={16} /> {L('Ouvrir le planificateur', 'Open the planner')}
-                  </button>
-                  <a
-                    className="link"
-                    href="./assets/Calculateur-fleches-v2.3.xlsx"
-                    download
-                  >
-                    <Icon name="download" size={14} /> {L('Classeur Excel v2.3', 'Excel workbook v2.3')}
-                  </a>
-                </div>
               </div>
             </div>
           </section>
@@ -553,7 +530,6 @@ export default function Presentation({ lang, data }) {
         {L("S'inscrire aux Flèches", 'Sign up for the Flèches')} <span aria-hidden="true">↗</span>
       </a>
 
-      {planif && <Planificateur fleches={fleches} onClose={() => setPlanif(false)} />}
     </>
   )
 }
