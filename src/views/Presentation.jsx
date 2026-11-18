@@ -168,7 +168,6 @@ export default function Presentation({ lang, data }) {
 
   return (
     <>
-      {/* ---------------------------------------------------------- hero */}
       <section className="hero hero-split" data-enter>
         <div className="wrap hero-split__in">
           <div className="hero-copy">
@@ -244,10 +243,8 @@ export default function Presentation({ lang, data }) {
         </button>
       </section>
 
-      {/* ------------------------------------------------------- corps */}
       <div className="wrap page-cols">
         <div className="page-main">
-          {/* encarts */}
           <section className="section section--dense" aria-labelledby="h-encarts">
             <div className="section-head">
               <h2 id="h-encarts" className="t-h2">
@@ -270,7 +267,6 @@ export default function Presentation({ lang, data }) {
             </div>
           </section>
 
-          {/* tableau officiel */}
           <section className="section section--dense" aria-labelledby="h-tableau">
             <div className="section-head">
               <h2 id="h-tableau" className="t-h2">
@@ -389,7 +385,6 @@ export default function Presentation({ lang, data }) {
             </div>
           </section>
 
-          {/* tarifs + calculateur */}
           <section className="section section--dense" aria-labelledby="h-tarifs">
             <div className="section-head">
               <h2 id="h-tarifs" className="t-h2">
@@ -437,7 +432,6 @@ export default function Presentation({ lang, data }) {
             </div>
           </section>
 
-          {/* défis */}
           <section className="section section--dense" aria-labelledby="h-defis">
             <div className="section-head">
               <h2 id="h-defis" className="t-h2">
@@ -479,7 +473,6 @@ export default function Presentation({ lang, data }) {
             </div>
           </section>
 
-          {/* en savoir plus */}
           <section className="section section--dense" aria-labelledby="h-savoir">
             <div className="section-head">
               <h2 id="h-savoir" className="t-h2">
@@ -535,7 +528,6 @@ export default function Presentation({ lang, data }) {
             </div>
           </section>
 
-          {/* règlement */}
           <section className="section section--dense" aria-labelledby="h-reglement">
             <div className="section-head">
               <h2 id="h-reglement" className="t-h2">

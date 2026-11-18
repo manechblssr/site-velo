@@ -45,7 +45,6 @@ export default function Annuaire({ lang, data, routeParam }) {
   const [avances, setAvances] = useState(false) // panneau « Filtres avancés »
   const [ouvert, setOuvert] = useState(null) // participant affiché en fiche
 
-  /* --- paramètres venus d'une autre vue (#/annuaire/fleche=… ou pid=…) --- */
   useEffect(() => {
     if (!routeParam) return
     const p = new URLSearchParams(routeParam)
@@ -64,7 +63,6 @@ export default function Annuaire({ lang, data, routeParam }) {
     setPage(1)
   }
 
-  /* --- options de filtre issues de la base ------------------------------ */
   const options = useMemo(() => {
     const annees = [...new Set(homologations.map((h) => h.annee))].sort((a, b) => b - a)
     const fedes = [...new Set(participants.map((p) => p.fede).filter(Boolean))].sort()
@@ -74,7 +72,6 @@ export default function Annuaire({ lang, data, routeParam }) {
     return { annees, fedes, depts, pays, clubNames }
   }, [homologations, participants, clubs])
 
-  /* --- filtrage ---------------------------------------------------------- */
   const liste = useMemo(() => {
     const qq = norm(q)
 
@@ -256,8 +253,6 @@ export default function Annuaire({ lang, data, routeParam }) {
             </span>
           </h1>
         </div>
-
-        {/* --- filtres principaux : recherche + Année + Club + Formule ----- */}
         <div className="toolbar toolbar--main" role="search" aria-label={L("Filtres de l'annuaire", 'Directory filters')}>
           <div className="toolbar__field toolbar__field--wide">
             <label htmlFor="an-q"><Icon name="search" size={13} /> {t('f.search')}</label>
@@ -323,8 +318,6 @@ export default function Annuaire({ lang, data, routeParam }) {
             {nbAvances > 0 && <span className="pill">{nbAvances}</span>}
           </button>
         </div>
-
-        {/* --- filtres secondaires : repliés par défaut -------------------- */}
         {avances && (
           <div
             className="toolbar toolbar--adv"

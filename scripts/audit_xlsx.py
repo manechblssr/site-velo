@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Audit programmatique de « Tableau de Bord Flèches.xlsx » (Audax Club Parisien — Flèches de France).
 
@@ -28,15 +27,12 @@ if hasattr(sys.stdout, "buffer"):
 
 LINES = []
 
-
 def log(s=""):
     LINES.append(s)
     print(s)
 
-
 def col_letter(n):
     return openpyxl.utils.get_column_letter(n)
-
 
 def fmt(v):
     if v is None:
@@ -49,8 +45,7 @@ def fmt(v):
         return ("%.6g" % v)
     return str(v)
 
-
-# ---------------------------------------------------------------- 1. INVENTAIRE
+# 1. INVENTAIRE
 def inventory(wbf, wbv):
     log("=" * 100)
     log("1. INVENTAIRE DU CLASSEUR")
@@ -77,10 +72,8 @@ def inventory(wbf, wbv):
     log("Note : le comptage de formules ne porte que sur les 30 premières lignes de chaque onglet.")
     log("")
 
-
-# ---------------------------------------------------------------- 2. JOURNAL DATA
+# 2. JOURNAL DATA
 MYSTERY = [20, 21, 31, 32, 33, 34, 45, 46]
-
 
 def audit_data(wbf, wbv):
     log("=" * 100)
@@ -165,8 +158,7 @@ def audit_data(wbf, wbv):
     log(f"Col 5 Flèche ({len(fleches)} distinctes) : {dict(fleches.most_common())}")
     log("")
 
-
-# ---------------------------------------------------------------- 3. AUTRES ONGLETS
+# 3. AUTRES ONGLETS
 def audit_other(wbv):
     log("=" * 100)
     log("3. AUTRES TABLES / ONGLETS")
@@ -188,7 +180,6 @@ def audit_other(wbv):
         if ws.max_row > maxr:
             log(f"  … ({ws.max_row - maxr} lignes supplémentaires)")
         log("")
-
 
 def audit_targeted(wbv):
     """Extraction ciblée demandée par les consignes."""
@@ -243,8 +234,7 @@ def audit_targeted(wbv):
                 log(f"  L{r:>3} | " + " | ".join(v[:20] for v in vals))
     log("")
 
-
-# ---------------------------------------------------------------- 4. ASSETS LOCAUX
+# 4. ASSETS LOCAUX
 def audit_assets():
     log("=" * 100)
     log("4. ASSETS WEB ET FICHIERS LOCAUX")
@@ -274,7 +264,6 @@ def audit_assets():
             log(f"  {fn} → {url}")
     log("")
 
-
 def main():
     part = sys.argv[1] if len(sys.argv) > 1 else "all"
     log("AUDIT XLSX — Tableau de Bord Flèches.xlsx — Audax Club Parisien")
@@ -300,7 +289,6 @@ def main():
     if part in ("all", "assets"):
         audit_assets(); flush()
     print(f"\nRapport écrit : {os.path.join(OUT_DIR, 'audit_xlsx.txt')}")
-
 
 if __name__ == "__main__":
     main()

@@ -3,11 +3,6 @@ import PalmaresNav from '../components/PalmaresNav.jsx'
 import { fmt, fmtKm } from '../lib/data.js'
 import { useL } from '../lib/i18n.js'
 
-/* ------------------------------------------------------------------ */
-/*  Vue « Évolution annuelle » : une ligne par saison, triable par     */
-/*  colonne, et les têtes de classement des saisons.                   */
-/* ------------------------------------------------------------------ */
-
 const COLS = [
   { key: 'annee', fr: 'Année', en: 'Year' },
   { key: 'nb', fr: 'Homologations', en: 'Validated rides' },
@@ -106,7 +101,6 @@ export default function Evolution({ data }) {
           </h1>
         </div>
 
-        {/* ------------------------------------------- têtes de classement */}
         <div className="section-head">
           <h2 className="t-h3 palmares-h3">{L('Têtes de classement', 'Top of the table')}</h2>
         </div>
@@ -127,7 +121,6 @@ export default function Evolution({ data }) {
           ))}
         </div>
 
-        {/* ------------------------------------------------ tableau annuel */}
         <div className="section-head">
           <h2 className="t-h3 palmares-h3">{L('Saison par saison', 'Season by season')}</h2>
           <p className="muted palmares-hint">

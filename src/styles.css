@@ -1,4 +1,4 @@
-/* ---------------------------------------------------------------------------
+/*
    Flèches de France — socle de styles
    1. Tailwind (utilitaires seuls, preflight couvert par le kit)
    2. Le kit du skill taste-skill (system.css) — prioritaire sur Tailwind
@@ -7,7 +7,7 @@
    carte) ; secondaire = les filtres ; tertiaire = les métadonnées.
    Accent unique : le bleu du logo ACP (#0048a8). Les couleurs Or / Argent /
    Bronze sont sémantiques (formules homologuées), jamais décoratives.
---------------------------------------------------------------------------- */
+*/
 @import "tailwindcss" source(none);
 @import "../public/kit/system.css";
 /* Tailwind ne doit lire que le shell et l'app : sans cela il détecte les
@@ -15,7 +15,7 @@
 @source "../index.html";
 @source "./";
 
-/* --- Utilitaire d'accessibilité -------------------------------------------
+/* Utilitaire d'accessibilité
    .sr-only est fourni par le kit (public/kit/system.css) : position:absolute,
    boîte de 1 px, clip. Sans coordonnées, un tel élément garde sa position
    *statique* — or, dans un tableau large (940 px), cette position est hors
@@ -28,7 +28,7 @@
   top: 0;
 }
 
-/* --- Charte ACP : extraite du logo officiel (LogoAudax-2022) -------------- */
+/* Charte ACP : extraite du logo officiel (LogoAudax-2022) */
 :root {
   --p-bg: #fbfaf8;
   --p-surface: #f2f0ec;
@@ -65,7 +65,7 @@
   --font-display: ui-serif, Georgia, "Times New Roman", serif;
 }
 
-/* --- Composants d'application -------------------------------------------- */
+/* Composants d'application */
 
 /* Barre d'outils : recherche + filtres (secondaire) */
 .toolbar {
@@ -761,10 +761,10 @@ h1.t-h2 {
   }
 }
 
-/* =========================================================================
+/*
    4. Ossature de page — le kit impose un en-tête fixe de --nav et une
       section à 100vh : on reprend la main pour des pages de données.
-   ========================================================================= */
+   */
 
 :root {
   --nav: 104px; /* barre hôte 40 + rangée rubrique 64 */
@@ -795,9 +795,7 @@ main > section.section--page > .wrap {
   height: auto;
 }
 
-/* =========================================================================
-   5. En-tête ACP : barre hôte + rangée rubrique + recherche
-   ========================================================================= */
+/* 5. En-tête ACP : barre hôte + rangée rubrique + recherche */
 
 header.nav {
   position: fixed;
@@ -1092,9 +1090,7 @@ header.nav {
   box-shadow: 0 10px 22px -20px rgb(14 19 25 / 0.6);
 }
 
-/* =========================================================================
-   6. Hero de présentation
-   ========================================================================= */
+/* 6. Hero de présentation */
 
 .hero-kicker {
   font-size: var(--t-label);
@@ -1153,9 +1149,7 @@ main > .hero > .wrap.hero-split__in {
   }
 }
 
-/* =========================================================================
-   7. Corps éditorial : deux colonnes, encarts, prose, cartes de défi
-   ========================================================================= */
+/* 7. Corps éditorial : deux colonnes, encarts, prose, cartes de défi */
 
 .page-cols {
   display: grid;
@@ -1378,9 +1372,7 @@ main > .hero > .wrap.hero-split__in {
   margin-bottom: 0;
 }
 
-/* =========================================================================
-   8. Outils : champs complémentaires, résultats de recherche, sélection
-   ========================================================================= */
+/* 8. Outils : champs complémentaires, résultats de recherche, sélection */
 
 .toolbar__chips {
   display: flex;
@@ -1781,9 +1773,7 @@ main > .hero > .wrap.hero-split__in {
   margin-right: 5px;
 }
 
-/* =========================================================================
-   9. Fiche club : classement interne et records
-   ========================================================================= */
+/* 9. Fiche club : classement interne et records */
 
 .kpis--records {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -1817,9 +1807,7 @@ main > .hero > .wrap.hero-split__in {
   font-variant-numeric: tabular-nums;
 }
 
-/* =========================================================================
-   10. Fiche palmarès (tiroir)
-   ========================================================================= */
+/* 10. Fiche palmarès (tiroir) */
 
 .fiche-meta {
   font-size: 14px;
@@ -1869,9 +1857,7 @@ main > .hero > .wrap.hero-split__in {
   margin-top: var(--s-3);
 }
 
-/* =========================================================================
-   11. Pied de page
-   ========================================================================= */
+/* 11. Pied de page */
 
 .footer-grid {
   display: grid;
@@ -1941,10 +1927,10 @@ main > .hero > .wrap.hero-split__in {
   }
 }
 
-/* =========================================================================
+/*
    10. Rond 2 — planificateur superposé, encarts refondus, invite à
        défiler, liste latérale de la carte
-   ========================================================================= */
+   */
 
 /* Une ancre de section doit passer sous l'en-tête fixe */
 [id] {
@@ -1964,7 +1950,7 @@ main:focus {
   color: var(--action);
 }
 
-/* --- Invite à défiler dans le vide du hero ------------------------------ */
+/* Invite à défiler dans le vide du hero */
 main > .hero {
   position: relative;
 }
@@ -2027,7 +2013,7 @@ main > .hero {
   }
 }
 
-/* --- « En bref » : un seul panneau, plus de cartes isolées -------------- */
+/* « En bref » : un seul panneau, plus de cartes isolées */
 .en-bref {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2078,7 +2064,7 @@ main > .hero {
   }
 }
 
-/* --- Défis : un seul bloc, un seul bouton ------------------------------- */
+/* Défis : un seul bloc, un seul bouton */
 .defi-panel {
   display: grid;
   gap: var(--s-5);
@@ -2131,7 +2117,7 @@ main > .hero {
   margin-top: 0;
 }
 
-/* --- Planificateur superposé ------------------------------------------- */
+/* Planificateur superposé */
 .planif {
   position: fixed;
   top: 50%;
@@ -2341,7 +2327,7 @@ main > .hero {
   }
 }
 
-/* --- Carte : liste latérale + bouton de recentrage ---------------------- */
+/* Carte : liste latérale + bouton de recentrage */
 .map-layout {
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr);
@@ -2469,7 +2455,7 @@ main > .hero {
   }
 }
 
-/* --- Référentiel : toute la ligne d'une flèche ouvre la carte ----------- */
+/* Référentiel : toute la ligne d'une flèche ouvre la carte */
 .table--20 tbody tr {
   cursor: pointer;
   transition: background-color var(--dur) var(--ease);
@@ -2481,7 +2467,7 @@ main > .hero {
   color: var(--action);
 }
 
-/* --- Accessibilité : motion réduite ------------------------------------ */
+/* Accessibilité : motion réduite */
 @media (prefers-reduced-motion: reduce) {
   .hero-scroll__cue {
     animation: none;
@@ -2494,9 +2480,7 @@ main > .hero {
   }
 }
 
-/* =========================================================================
-   11. Carte interactive — v3 : arcs animés, liste synchronisée, outils
-   ========================================================================= */
+/* 11. Carte interactive — v3 : arcs animés, liste synchronisée, outils */
 
 .cx-head {
   display: flex;
@@ -3036,7 +3020,7 @@ main > .hero {
   color: var(--ink);
 }
 
-/* --- les flèches -------------------------------------------------------- */
+/* les flèches */
 .fl-trace {
   transition:
     stroke-width 200ms var(--ease),
@@ -3379,9 +3363,7 @@ main > .hero {
   display: block;
 }
 
-/* =========================================================================
-   12. Fiche cycliste — v3
-   ========================================================================= */
+/* 12. Fiche cycliste — v3 */
 
 .drawer.fx {
   width: min(720px, 100%);
@@ -3997,9 +3979,7 @@ main > .hero {
   }
 }
 
-/* =========================================================================
-   13. En-tête, présentation : retouches v3
-   ========================================================================= */
+/* 13. En-tête, présentation : retouches v3 */
 
 /* recherche : sans titre au-dessus, centrée dans la barre, loupe intégrée */
 .acp-main {
@@ -4235,9 +4215,7 @@ main > .hero {
   margin-left: 0;
 }
 
-/* =========================================================================
-   14. Planificateur superposé — v3
-   ========================================================================= */
+/* 14. Planificateur superposé — v3 */
 .planif.pl {
   width: min(880px, calc(100% - 32px));
   padding: 0;
@@ -4697,7 +4675,7 @@ main > .hero {
   text-transform: none;
 }
 
-/* --- icônes d'interface : alignement commun ---------------------------- */
+/* icônes d'interface : alignement commun */
 .toolbar__field label,
 .toolbar label:not(.switch) {
   display: inline-flex;
@@ -4824,10 +4802,10 @@ main > .hero {
   display: inline-block;
 }
 
-/* =========================================================================
+/*
    Carte animée : flux le long des arcs, apparition des repères,
    chronologie « Rejouer l'histoire »
-   ========================================================================= */
+   */
 
 /* impulsions lumineuses qui filent de Paris vers la ville d'arrivée */
 .fl-flux {
@@ -5071,9 +5049,7 @@ main > .hero {
   }
 }
 
-/* =========================================================================
-   Défis : onglets, introduction, filtres, tableaux lisibles sur mobile
-   ========================================================================= */
+/* Défis : onglets, introduction, filtres, tableaux lisibles sur mobile */
 
 .defis-intro {
   max-width: 72ch;
@@ -5370,7 +5346,6 @@ main > .hero {
 .cell-fo {
   min-width: 200px;
 }
-
 
 @media (max-width: 640px) {
   /* onglets : une seule ligne qui défile au doigt */

@@ -4,12 +4,12 @@ import Icon from './Icon.jsx'
 import { makeT, pick, nomClub } from '../lib/i18n.js'
 import { fmt, fmtDate, downloadCSV, nomFormule, nomTranche } from '../lib/data.js'
 
-/* ---------------------------------------------------------------------------
+/*
    Fiche palmarès d'un cycliste — tiroir latéral.
    En-tête d'identité + anneau de progression, chiffres clés, répartition
    des formules, puis deux onglets : la grille des 20 Flèches et la
    chronologie des homologations groupée par année.
---------------------------------------------------------------------------- */
+*/
 
 const RANG = { O: 3, A: 2, B: 1 }
 
@@ -154,7 +154,6 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
         tabIndex={-1}
         ref={box}
       >
-        {/* ------------------------------------------------------ identité */}
         <header className="fx-hero">
           <button type="button" className="fx-close" onClick={onClose} aria-label={t('nav.close')}>
             <Icon name="x" size={18} />
@@ -286,7 +285,6 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
             </dl>
           )}
 
-          {/* ------------------------------------------------ chiffres clés */}
           <div className="fx-kpis">
             <div className="fx-kpi">
               <Icon name="medal" size={18} />
@@ -317,7 +315,6 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
             </div>
           </div>
 
-          {/* --------------------------------------------------- formules */}
           <div className="fx-fo" aria-label={L('Répartition des formules', 'Formula breakdown')}>
             {['O', 'A', 'B'].map((c) => (
               <div key={c} className={`fx-fo__row fx-fo__row--${c}`}>
@@ -330,7 +327,6 @@ export default function Fiche({ lang, data, participant, manager, onFleche, onCl
             ))}
           </div>
 
-          {/* ---------------------------------------------------- onglets */}
           <div className="fx-tabs" role="tablist" aria-label={L('Palmarès', 'Record')}>
             <button
               type="button"

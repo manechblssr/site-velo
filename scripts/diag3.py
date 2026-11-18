@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Diagnostic 3 : localiser précisément la fuite de largeur en mobile."""
 import sys
 
@@ -31,7 +30,6 @@ JS = """() => {
   return res;
 }"""
 
-
 def main():
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True)
@@ -51,7 +49,6 @@ def main():
             for x in r["widest"][:5]:
                 print("   ", x)
         b.close()
-
 
 if __name__ == "__main__":
     main()

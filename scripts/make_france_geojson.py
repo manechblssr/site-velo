@@ -22,7 +22,6 @@ LAT_MIN, LAT_MAX = 40.9, 51.8
 # Le point éloigné du précédent doit être retenu (sinon on décime la courbe)
 MIN_STEP = 0.012  # ~1,3 km
 
-
 def metro(ring):
     """True si l'anneau touche la France métropolitaine."""
     lons = [p[0] for p in ring]
@@ -33,7 +32,6 @@ def metro(ring):
         or max(lats) < LAT_MIN
         or min(lats) > LAT_MAX
     )
-
 
 def clean(ring):
     """Écarte les points trop proches et arrondi à 4 décimales."""
@@ -47,7 +45,6 @@ def clean(ring):
     if len(out) > 3 and out[0] == out[-1]:
         out[-1] = out[0]
     return out if len(out) > 3 else ring
-
 
 def main() -> int:
     src = (
@@ -108,7 +105,6 @@ def main() -> int:
         f"{sum(len(r) for p in keep for r in p)} points, {dest.stat().st_size} octets"
     )
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

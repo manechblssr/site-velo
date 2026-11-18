@@ -35,7 +35,6 @@ JS = r"""
 }
 """
 
-
 def run():
     with sync_playwright() as pw:
         b = pw.chromium.launch()
@@ -52,7 +51,6 @@ def run():
         for p in res["placeholder"]:
             print("  -", p)
         b.close()
-
 
 if __name__ == "__main__":
     run()

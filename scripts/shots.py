@@ -24,7 +24,6 @@ VIEWPORTS = [
     ("mobile", {"width": 390, "height": 844}),
 ]
 
-
 def run(only_mobile=False):
     OUT.mkdir(parents=True, exist_ok=True)
     erreurs = []
@@ -59,7 +58,6 @@ def run(only_mobile=False):
     for e in erreurs:
         print(" !", e)
     return 1 if erreurs else 0
-
 
 if __name__ == "__main__":
     sys.exit(run(only_mobile="--mobile" in sys.argv))

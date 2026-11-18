@@ -36,8 +36,6 @@ export function useData() {
   return ctx
 }
 
-/* --- Routeur en hash : aucune dépendance, fonctionne en file:// ---------- */
-
 const ROUTES = ['presentation', 'carte', 'annuaire', 'defis', 'clubs', 'evolution']
 
 function parseHash() {

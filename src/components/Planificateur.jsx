@@ -179,7 +179,6 @@ export default function Planificateur({ fleches, initialId, onClose }) {
         </header>
 
         <div className="pl-body">
-          {/* ----------------------------------------------- paramètres */}
           <div className="pl-form">
             <div className="pl-field pl-field--wide">
               <label htmlFor="planif-fleche">
@@ -235,7 +234,6 @@ export default function Planificateur({ fleches, initialId, onClose }) {
             <p className="note">{L('Délai officiel illisible pour cette formule.', 'The official time limit for this formula could not be read.')}</p>
           ) : (
             <div className="pl-result" key={`${fleche.id}-${formule}`}>
-              {/* --------------------------------------------- résultat */}
               <div className="pl-hero">
                 <div>
                   <p className="pl-hero__lbl">
@@ -268,7 +266,6 @@ export default function Planificateur({ fleches, initialId, onClose }) {
                 </ul>
               </div>
 
-              {/* ---------------------------------- frise des repères */}
               <section className="pl-frise" aria-labelledby="planif-etape">
                 <h3 className="pl-h" id="planif-etape">
                   <Icon name="route" size={15} /> {L('Repères horaires', 'Timing checkpoints')}
@@ -310,7 +307,6 @@ export default function Planificateur({ fleches, initialId, onClose }) {
                 </p>
               </section>
 
-              {/* -------------------------------------------- parcours */}
               <ul className="pl-facts">
                 <li>
                   <Icon name="ruler" size={15} />

@@ -114,8 +114,6 @@ export function col(t, key, fallback) {
   return v === key ? fallback : v
 }
 
-/* --- Langue courante partagée par tout l'arbre ------------------------- */
-
 export const LangContext = createContext('fr')
 
 export function useLang() {

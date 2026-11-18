@@ -80,7 +80,6 @@ CIBLES = {
     },
 }
 
-
 def run():
     with sync_playwright() as pw:
         b = pw.chromium.launch()
@@ -98,7 +97,6 @@ def run():
                 else:
                     print(f"  {k:16} {v}")
         b.close()
-
 
 if __name__ == "__main__":
     run()

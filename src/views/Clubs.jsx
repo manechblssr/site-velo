@@ -5,10 +5,6 @@ import { useData, useRoute } from '../lib/store.jsx'
 import { fmt, fmtKm, norm, downloadCSV } from '../lib/data.js'
 import { useL } from '../lib/i18n.js'
 
-/* ------------------------------------------------------------------ */
-/*  Vue « Palmarès club »     : classement, fiche club, saison       */
-/* ------------------------------------------------------------------ */
-
 /* 455 clubs sur une seule page donnerait ~27 000 px de défilement : le
    classement se lit par pages, comme l'annuaire. */
 const PAR_PAGE = 25
@@ -100,7 +96,6 @@ export default function Clubs() {
         .map((c) => ({ nom: c.nom, v: c[key] }))
     return { km: top('km'), nb: top('nb'), participants: top('participants') }
   }, [clubs])
-
 
   const exporter = () =>
     downloadCSV(
@@ -247,7 +242,6 @@ export default function Clubs() {
           <FicheClub club={club} parClub={parClub} onClose={() => setOuvert(null)} onGo={go} L={L} />
         )}
 
-        {/* --------------------------------------------------------- records */}
         <div className="section-head">
           <h2 className="t-h2">{L('Têtes de classement', 'Top of the table')}</h2>
         </div>
@@ -279,8 +273,6 @@ export default function Clubs() {
 function meta(clubs, key) {
   return clubs.reduce((s, c) => s + (c[key] || 0), 0)
 }
-
-/* ------------------------------------------------------------------ */
 
 function FicheClub({ club, parClub, onClose, onGo, L }) {
   const membres = useMemo(

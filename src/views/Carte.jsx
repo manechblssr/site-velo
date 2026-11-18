@@ -7,7 +7,7 @@ import Planificateur from '../components/Planificateur.jsx'
 import { makeT, pick, nomClub } from '../lib/i18n.js'
 import { fmt, norm } from '../lib/data.js'
 
-/* ---------------------------------------------------------------------------
+/*
    Carte interactive des 20 Flèches.
    - Chaque flèche est un arc Paris → ville d'arrivée, tracé à l'affichage,
      coloré par tranche de distance, avec un chevron qui donne le sens.
@@ -15,7 +15,7 @@ import { fmt, norm } from '../lib/data.js'
      ressort, les autres s'estompent (et inversement).
    - La fiche (popup) reprend distance, D+, délais, liens et compteurs ;
      elle ouvre aussi le planificateur sur la flèche choisie.
---------------------------------------------------------------------------- */
+*/
 
 const PARIS = [48.8566, 2.3522]
 const CENTRE_FRANCE = [46.6, 2.5]
@@ -113,7 +113,6 @@ const reduit = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-/* --- Géométrie : arc de Bézier quadratique en projection Mercator -------- */
 const PROJ = L.Projection.SphericalMercator
 
 function arc(a, b, bend = 0.17, n = 56) {
@@ -321,7 +320,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     return { annees, cumul, max }
   }, [homologations])
 
-  /* --- recherche de participant ----------------------------------------- */
   const resultats = useMemo(() => {
     const q = norm(quest)
     if (q.length < 3) return []
@@ -372,7 +370,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     return l
   }, [visibles, filtre, tri])
 
-  /* --- actions ---------------------------------------------------------- */
   function choisirFleche(f) {
     if (f.coords) zoomerSur(f.id)
   }
@@ -508,7 +505,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     else if (bas > box.scrollTop + box.clientHeight) box.scrollTop = bas - box.clientHeight + 8
   }, [actif])
 
-  /* --- initialisation --------------------------------------------------- */
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return
     const map = L.map(mapEl.current, {
@@ -634,7 +630,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     }
   }, [])
 
-  /* --- libellés Leaflet créés à l'initialisation : suivent la langue ---- */
   useEffect(() => {
     const cont = mapEl.current
     if (!cont) return
@@ -647,7 +642,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang])
 
-  /* --- dimension -------------------------------------------------------- */
   useEffect(() => {
     const el = mapEl.current
     if (!el) return
@@ -668,7 +662,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     }
   }, [])
 
-  /* --- dessin des flèches ----------------------------------------------- */
   useEffect(() => {
     const map = mapRef.current
     if (!map || !couches.current.arrivees) return
@@ -866,7 +859,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibles, parParticipant, formule, fleches, kmMax, lang])
 
-  /* --- calques ---------------------------------------------------------- */
   useEffect(() => {
     const map = mapRef.current
     if (!map || !couches.current.arrivees) return
@@ -882,7 +874,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     }
   }, [calque, visibles, parParticipant, formule])
 
-  /* --- mise en avant : survol ou fiche ouverte -------------------------- */
   const focus = survol ?? actif
   useEffect(() => {
     const cont = mapEl.current
@@ -898,7 +889,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     }
   }, [focus, visibles, parParticipant, formule, calque])
 
-  /* --- chronologie : épaisseur des arcs = homologations cumulées --------- */
   useEffect(() => {
     const cont = mapEl.current
     if (!cont) return
@@ -984,7 +974,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
     return () => window.clearTimeout(tm)
   }, [routeParam, fleches, participants])
 
-  /* --- cadrage sur le participant -------------------------------------- */
   useEffect(() => {
     const map = mapRef.current
     if (!map || !sel) return
@@ -1003,7 +992,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
   return (
     <section className="section section--page cx" aria-labelledby="h-carte">
       <div className="wrap">
-        {/* ----------------------------------------------------------- titre */}
         <header className="cx-head">
           <div>
             <p className="cx-kicker">
@@ -1029,7 +1017,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
           </ul>
         </header>
 
-        {/* ------------------------------------------------------ commandes */}
         <div className="cx-bar" role="group" aria-label={tr('Filtres de la carte', 'Map filters')}>
           <div className="cx-search">
             <Icon name="user" size={16} className="cx-search__ico" />
@@ -1102,7 +1089,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
           </div>
         </div>
 
-        {/* ------------------------------------------ participant sélectionné */}
         {sel && (
           <div className="civ cx-civ" role="group" aria-label={tr('Participant sélectionné', 'Selected rider')}>
             <div className="civ__id">
@@ -1160,7 +1146,6 @@ export default function Carte({ lang, data, routeParam, onOpenFleche, onOpenPart
           </div>
         )}
 
-        {/* ------------------------------------------------- carte + liste */}
         <div className={`cx-stage${plein ? ' is-plein' : ''}`} ref={stageRef}>
           <aside className="cx-list" aria-label={tr('Liste des flèches', 'List of Flèches')}>
             <div className="cx-list__head">

@@ -96,7 +96,7 @@ function licenceDerniere(participants, homologations, defis) {
   }
 }
 
-/* --- La Complète express ------------------------------------------------
+/* La Complète express
    Défi : les 20 Flèches homologuées en 12 mois au plus. Le calcul est fait
    sur tout le journal, cycliste par cycliste, et ne dépend plus de la liste
    du classeur :
@@ -212,8 +212,6 @@ function calculerExpress(participants, fleches, homologations) {
   return { laureats, aVerifier }
 }
 
-/* --- Recherche sans accent ni casse ------------------------------------- */
-
 export function norm(s) {
   return String(s ?? '')
     .normalize('NFD')
@@ -230,8 +228,6 @@ export function buildIndex(participants) {
   }
   return map
 }
-
-/* --- Formats ------------------------------------------------------------- */
 
 /* Langue d'affichage des nombres : réglée par l'application au changement
    de langue (espace fine en français, virgule en anglais). */
@@ -281,8 +277,6 @@ export function nomTranche(code, lang) {
   const t = TRANCHES.find((x) => x.code === code)
   return t ? (lang === 'en' ? t.en : t.nom) : null
 }
-
-/* --- Export CSV (RFC 4180, séparateur ; pour Excel FR) -------------------- */
 
 function cell(v) {
   const s = v === null || v === undefined ? '' : String(v)

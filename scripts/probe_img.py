@@ -31,7 +31,6 @@ JS = r"""
 }
 """
 
-
 def run():
     with sync_playwright() as pw:
         b = pw.chromium.launch()
@@ -47,7 +46,6 @@ def run():
         for r in sorted(res, key=lambda x: x["eff"])[:5]:
             print("   ", r)
         b.close()
-
 
 if __name__ == "__main__":
     run()

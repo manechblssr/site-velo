@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Audit fonctionnel du site local « Flèches de France ».
 
 Lance chaque vue, capte les erreurs console / réseau, exerce les interactions
@@ -27,10 +26,8 @@ notes = []      # observations non bloquantes (titres, compteurs, états)
 problems = []   # défauts de l'application : code, ressources locales, mise en page
 env = []        # réseau externe : CDN injoignable, requête annulée par la navigation
 
-
 def est_local(url):
     return url.startswith(BASE.rstrip("/"))
-
 
 def watch(page, tag):
     # Un message du type « Failed to load resource: net::… » est émis par le
@@ -58,13 +55,11 @@ def watch(page, tag):
         else None,
     )
 
-
 def goto(page, route):
     page.goto(f"{BASE}#/{route}", wait_until="domcontentloaded")
     page.wait_for_load_state("networkidle")
     page.wait_for_selector("h1", timeout=15000)
     page.wait_for_timeout(400)
-
 
 def main():
     with sync_playwright() as p:
@@ -73,7 +68,7 @@ def main():
         page = ctx.new_page()
         watch(page, "boot")
 
-        # ---------------------------------------------------------- accueil
+        # accueil
         goto(page, "presentation")
         notes.append(f"title={page.title()}")
         for v in VUES:
@@ -81,7 +76,7 @@ def main():
             page.screenshot(path=str(OUT / f"{v}-desktop.png"), full_page=True)
             notes.append(f"[{v}] h1={page.locator('h1').first.inner_text()[:80]}")
 
-        # --------------------------------------------------------- annuaire
+        # annuaire
         goto(page, "annuaire")
         rows = page.locator("table.table-app--lite tbody tr")
         notes.append(f"[annuaire] lignes page1={rows.count()}")
@@ -143,7 +138,7 @@ def main():
             if page.locator(".drawer").count() != 0:
                 problems.append("[annuaire] Échap ne referme pas la fiche")
 
-        # ------------------------------------------------------------- carte
+        # carte
         goto(page, "carte")
         page.wait_for_timeout(2500)
         panes = page.locator(".map-canvas .leaflet-pane").count()
@@ -222,7 +217,7 @@ def main():
             page.screenshot(path=str(OUT / "carte-participant.png"))
         page.wait_for_timeout(800)
 
-        # ------------------------------------------------------------- défis
+        # défis
         goto(page, "defis")
         for tab in ["Par formule", "Le pionnier", "La Complète", "La Complète express", "Le combiné"]:
             page.click(f'[role="tab"]:has-text("{tab}")')
@@ -246,7 +241,7 @@ def main():
         if n_or == n_or_luchon:
             problems.append("[defis] le filtre flèche n'affine pas la sélection")
 
-        # ------------------------------------------------------------- clubs
+        # clubs
         goto(page, "clubs")
         nclubs = page.locator("table.table-app tbody tr").count()
         notes.append(f"[clubs] lignes={nclubs}")
@@ -265,7 +260,7 @@ def main():
             notes.append(f"[clubs] fiche: {page.locator('.fiche-club h3').first.inner_text()}")
         page.screenshot(path=str(OUT / "clubs-fiche.png"), full_page=True)
 
-        # ------------------------------------------------------- présentation
+        # présentation
         goto(page, "presentation")
         lien = page.locator('a[href^="#/carte/"]').first
         if lien.count():
@@ -277,7 +272,7 @@ def main():
             if page.locator(".leaflet-popup .pop__titre").count() == 0:
                 notes.append("[presentation] (info) popup carte non ouverte depuis le lien")
 
-        # ------------------------------------- présentation : refonte rond 2
+        # présentation : refonte rond 2
         goto(page, "presentation")
 
         # invite à défiler dans le vide du hero
@@ -426,7 +421,7 @@ def main():
         ) is not True:
             notes.append("[clubs] (info) le lien d'évitement n'a pas déplacé le focus sur <main>")
 
-        # ------------------------------------------------------------ mobile
+        # mobile
         ctx2 = browser.new_context(viewport={"width": 390, "height": 844})
         page2 = ctx2.new_page()
         watch(page2, "mobile")
@@ -468,7 +463,6 @@ def main():
         f"{len(env)} requete(s) externe en echec."
     )
     return 1 if problems else 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

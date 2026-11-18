@@ -153,8 +153,6 @@ export default function Defis({ lang, data, routeParam = '' }) {
   )
 }
 
-/* ------------------------------------------------------------- pagination */
-
 function Pager({ page, pages, total, unite, onPage, label }) {
   const L = useL()
   if (pages <= 1) return null
@@ -205,8 +203,6 @@ function Resultbar({ innerRef, children, actions }) {
     </div>
   )
 }
-
-/* ------------------------------------------------------------------ formules */
 
 function ParFormule({ homologations, fleches, lang }) {
   const t = makeT(lang)
@@ -373,8 +369,6 @@ function ParFormule({ homologations, fleches, lang }) {
     </>
   )
 }
-
-/* ------------------------------------------------------------------ pionnier */
 
 /* Le pionnier d'un duo Flèche × Formule est le premier à l'avoir réalisé :
    on classe les homologations par date de réalisation (puis n°
@@ -565,8 +559,6 @@ function Pionnier({ fleches, homologations, participants }) {
   )
 }
 
-/* ------------------------------------------------------------------ complète */
-
 /* Nombre de Flèches faites dans une formule : chiffre + barre de progression.
    Les 20 sur 20 prennent la couleur du métal. */
 function Tally({ f, n, total }) {
@@ -673,7 +665,6 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
     for (const p of participants) m.set(norm(`${p.nom} ${p.prenom}`), p)
     return m
   }, [participants])
-
 
   const filtre = sexe || q || metaux.length > 0
   const effacer = () => {
@@ -896,8 +887,6 @@ function Complete({ defis, stats, participants, homologations, fleches, lang }) 
   )
 }
 
-/* ------------------------------------------------------------------- express */
-
 function Express({ defis }) {
   const L = useL()
   const lang = useLang()
@@ -1000,8 +989,6 @@ function Express({ defis }) {
     </>
   )
 }
-
-/* ------------------------------------------------------------------ combiné */
 
 function Combine() {
   const L = useL()

@@ -1,9 +1,9 @@
-/* ---------------------------------------------------------------------------
+/*
    Jeu d'icônes local — lucide (licence ISC), récupéré via le MCP iconify et
    embarqué en SVG inline : aucun appel réseau, aucune dépendance runtime.
    Usage : <Icon name="map-pin" size={16} />
    L'icône est décorative (aria-hidden) : le libellé reste porté par le texte.
---------------------------------------------------------------------------- */
+*/
 const P = {
   'search': '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m21 21l-4.34-4.34"/><circle cx="11" cy="11" r="8"/></g>',
   'menu': '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5h16M4 12h16M4 19h16"/>',

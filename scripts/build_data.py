@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 build_data.py — parse « Tableau de Bord Flèches.xlsx » et génère les JSON normalisés
 du site local « Flèches de France » (Audax Club Parisien) dans public/data/.
@@ -38,9 +37,7 @@ if hasattr(sys.stdout, "buffer"):
 TODAY = dt.date(2026, 11, 12)          # date de référence des âges (colonne V du classeur)
 BUILD_DATE = dt.date(2026, 11, 14)
 
-# ---------------------------------------------------------------------------
 # Référentiel officiel 2026 (site ACP) — CONSIGNES.md, section ÉTAPE 2.C
-# ---------------------------------------------------------------------------
 OFFICIAL = [
     # nom, km, d+, or, argent, bronze, départ décalé: (commune, km, d+, or, argent, bronze), openrunner, pdf
     ("DIEPPE", 192, 1025, "7h40", "9h35", "58h",
@@ -153,7 +150,6 @@ AGE_BANDS = [(65, "a"), (50, "b"), (35, "c"), (20, "d"), (0, "e")]
 DEPT_CODES = ({f"{i:02d}" for i in range(1, 20)} | {f"{i:02d}" for i in range(21, 96)}
               | {"2A", "2B", "971", "972", "973", "974", "976"})
 
-
 def s(v):
     """Normalise une valeur de cellule en chaîne propre."""
     if v is None:
@@ -165,7 +161,6 @@ def s(v):
             return str(int(round(v)))
         return ("%.6g" % v)
     return str(v).strip()
-
 
 def num(v, default=None):
     """Conversion numérique tolérante : 'x', '1 234', '' → default."""
@@ -186,7 +181,6 @@ def num(v, default=None):
         return int(round(f))
     return f
 
-
 def derive_dept(cp, pays=""):
     """Département depuis un code postal + pays (codes admis : 01-95, 2A/2B, 971-976, ETR)."""
     d = s(cp)
@@ -203,7 +197,6 @@ def derive_dept(cp, pays=""):
         return "ETR"
     return ""
 
-
 def norm_key(name):
     """Clé de rapprochement flèche : sans article, sans accent ni espace."""
     import unicodedata
@@ -214,7 +207,6 @@ def norm_key(name):
     t = t.replace("SAINT", "ST")   # MONT ST MICHEL ↔ LE MONT SAINT MICHEL
     return t.replace(" ", "")
 
-
 def age_band(age):
     for seuil, code in AGE_BANDS:
         if age is None:
@@ -223,13 +215,10 @@ def age_band(age):
             return code
     return "e"
 
-
-# ---------------------------------------------------------------------------
 def load_sheets():
     print(f"Lecture de {XLSX} …")
     wb = openpyxl.load_workbook(XLSX, data_only=True, read_only=True)
     return wb
-
 
 def read_tab(ws, header_row=1, max_col=None):
     """Lit un onglet en listes de chaînes, sautant les lignes vides de tête."""
@@ -243,8 +232,6 @@ def read_tab(ws, header_row=1, max_col=None):
         rows.append(vals)
     return rows
 
-
-# ---------------------------------------------------------------------------
 def parse_parcours(wb):
     """Onglet Parcours : Flèche, km, D+, ratio, niveau, cat km, cat D+, mise à jour."""
     rows = read_tab(wb["Parcours"])
@@ -275,7 +262,6 @@ def parse_parcours(wb):
         }
     return out
 
-
 def parse_adresses(wb):
     """Onglet Adresses (en-tête ligne 3) : ville, CP, pays, département par Nom Prénom."""
     rows = read_tab(wb["Adresses"], header_row=3)
@@ -295,7 +281,6 @@ def parse_adresses(wb):
         }
     return out
 
-
 def parse_departements(wb):
     rows = read_tab(wb["Departements"])
     deps = []
@@ -306,7 +291,6 @@ def parse_departements(wb):
                      "homologations": int(r[3]) if len(r) > 3 and r[3].isdigit() else 0,
                      "participants": int(r[4]) if len(r) > 4 and r[4].isdigit() else 0})
     return deps
-
 
 def parse_clubs(wb):
     """Onglet Clubs : bloc principal A:J + blocs juxtaposés (top km / top nb / par année)."""
@@ -363,7 +347,6 @@ def parse_clubs(wb):
         c["parAnneeNb"] = annee_nb.get(c["nom"], {})
     return clubs, tops, dict(annee_km), dict(annee_nb)
 
-
 def parse_recap_participants(wb):
     """Onglet Participants (récapitulatif) : Nom Prénom, Km, nb, rangs, H/F, catégories."""
     rows = read_tab(wb["Participants"], max_col=14)
@@ -382,7 +365,6 @@ def parse_recap_participants(wb):
                      "categAnnee": r[12] if len(r) > 12 and isinstance(r[12], str) else "",
                      "categTotal": r[13] if len(r) > 13 and isinstance(r[13], str) else ""}
     return out
-
 
 def parse_palmares20(wb):
     """Onglet « 2 Palmares » : lauréats des 20 flèches + Palmarès « en Or » (3 et plus).
@@ -419,7 +401,6 @@ def parse_palmares20(wb):
     hommes.sort(key=lambda x: x["rang"])
     return {"femmes": femmes, "hommes": hommes,
             "orFemmes": or_f, "orHommes": or_h, "palmaresOr": or_f + or_h}
-
 
 def parse_tcd_palmares(wb):
     """Onglet « Tcd Palamrès » : 4 blocs juxtaposés, alignés sur leurs propres en-têtes.
@@ -464,8 +445,6 @@ def parse_tcd_palmares(wb):
     return {"complete20": complete20, "parFleche": par_fleche,
             "parAnnee": par_annee, "palmaresOr": palmares_or}
 
-
-# ---------------------------------------------------------------------------
 def main():
     verify = "--verify" in sys.argv
     wb = load_sheets()
@@ -479,7 +458,7 @@ def main():
     palmares20 = parse_palmares20(wb)
     tcd_pal = parse_tcd_palmares(wb)
 
-    # ---------------------------------------------------------------- JOURNAL
+    # JOURNAL
     print("Parsing du journal DATA (17 094 lignes) …")
     ws = wb["DATA"]
     records = []
@@ -564,7 +543,7 @@ def main():
     print(f"  Dept : {n_cache} (Adresses) · {n_cp_adr} (CP Adresses) · {n_cp_jr} (CP journal) "
           f"· {n_ville} (ville) · {n_et} étranger · {n_vid} inconnu")
 
-    # --------------------------------------------------- PARTICIPANTS (regroupés)
+    # PARTICIPANTS (regroupés)
     print("Regroupement des participants par (Nom, Prénom, Date de naissance) …")
     parts = {}
     for r in records:
@@ -633,7 +612,7 @@ def main():
         })
     participants.sort(key=lambda p: (p["nom"], p["prenom"]))
 
-    # --------------------------------------------------------- HOMOLOGATIONS (JSON)
+    # HOMOLOGATIONS (JSON)
     print("Écriture des homologations …")
     # index participant par (Nom, Prénom, Naissance) — la clé de regroupement exacte
     idx_part = {k: v["id"] for k, v in parts.items()}
@@ -649,7 +628,7 @@ def main():
             "dept": r["dept"], "club": r["club"], "fede": r["fede"],
         })
 
-    # ------------------------------------------------------------- FLÈCHES (20)
+    # FLÈCHES (20)
     print("Assemblage des 20 Flèches …")
     stats_fleche = defaultdict(lambda: Counter())
     km_fleche = defaultdict(lambda: {"km": 0, "dplus": 0})
@@ -690,7 +669,7 @@ def main():
             "palmares": tcd_pal["parFleche"].get(k),
         })
 
-    # ---------------------------------------------------------------- CLUBS
+    # CLUBS
     print("Agrégation des clubs …")
     club_agg = defaultdict(lambda: {"km": 0, "nb": 0, "parts": set(), "O": 0, "A": 0, "B": 0,
                                     "parAnnee": defaultdict(int), "parAnneeNb": defaultdict(int)})
@@ -726,7 +705,7 @@ def main():
     for c in clubs:
         c["code"] = code_map.get(c["nom"], "")
 
-    # ------------------------------------------------------ STATS ANNUELLES
+    # STATS ANNUELLES
     print("Statistiques annuelles …")
     years = sorted({r["annee"] for r in records})
     stats_year = []
@@ -748,7 +727,7 @@ def main():
     for st in stats_year:
         st["nouveaux"] = len(first_year.get(st["annee"], ()))
 
-    # --------------------------------------------------------------- DÉFIS
+    # DÉFIS
     print("Défis : La Complète, express, pionnier, groupées …")
     complete = [p for p in participants if p["complete"]]
     express = []
@@ -806,7 +785,7 @@ def main():
         "parAnnee": {str(k): v for k, v in sorted(Counter(r["annee"] for r in grp_rows).items())},
     }
 
-    # ---------------------------------------------------------------- JSON
+    # JSON
     os.makedirs(OUT, exist_ok=True)
     payload = {
         "meta": {
@@ -846,7 +825,7 @@ def main():
             json.dump(obj, fh, ensure_ascii=False, separators=(",", ":"))
         print(f"  {name:26s} {os.path.getsize(path):>10,} octets")
 
-    # ---------------------------------------------------------------- BILAN
+    # BILAN
     print("\n" + "=" * 90)
     print("BILAN VOLUMÉTRIQUE")
     print("=" * 90)
@@ -884,7 +863,6 @@ def main():
         print(f"  OPF (col 45) somme    : {round(sum(r['opf'] for r in records if isinstance(r['opf'], (int, float))), 2)}")
         print(f"  Dept final (post-XLOOKUP) : {dict(Counter(r['dept'] or '(inconnu)' for r in records).most_common(8))}")
     print(f"\nDonnées écrites dans {OUT}")
-
 
 if __name__ == "__main__":
     main()

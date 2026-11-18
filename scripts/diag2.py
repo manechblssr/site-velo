@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Diagnostic 2 : origine du débordement mobile + bruit console des tuiles."""
 import sys
 
@@ -11,12 +10,11 @@ BASE = "http://localhost:5173/"
 
 CLIPPED = ("auto", "scroll", "hidden", "clip")
 
-
 def main():
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True)
 
-        # --- 1. d'où vient le débordement horizontal ? --------------------
+        # 1. d'où vient le débordement horizontal ?
         ctx = b.new_context(viewport={"width": 390, "height": 844})
         pg = ctx.new_page()
         pg.goto(BASE + "#/annuaire", wait_until="domcontentloaded")
@@ -58,7 +56,7 @@ def main():
               " vw =", pg.evaluate("document.documentElement.clientWidth"))
         ctx.close()
 
-        # --- 2. une Image / fetch en échec logue-t-il en console ? ---------
+        # 2. une Image / fetch en échec logue-t-il en console ?
         ctx2 = b.new_context(viewport={"width": 800, "height": 600})
         pg2 = ctx2.new_page()
         logs = []
@@ -87,7 +85,6 @@ def main():
         print("  logs:", logs)
 
         b.close()
-
 
 if __name__ == "__main__":
     main()
