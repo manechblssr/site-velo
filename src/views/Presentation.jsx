@@ -269,6 +269,7 @@ export default function Presentation({ lang, data }) {
                     <th scope="col">{L('Délai Argent', 'Silver limit')}</th>
                     <th scope="col">{L('Délai Bronze', 'Bronze limit')}</th>
                     <th scope="col">{L('Départ décalé', 'Alternative start')}</th>
+                    <th scope="col" className="num">{L('Mise à jour', 'Updated')}</th>
                     <th scope="col">{L('Ressources', 'Resources')}</th>
                   </tr>
                 </thead>
@@ -307,6 +308,7 @@ export default function Presentation({ lang, data }) {
                           {f.depart.commune}
                           <span className="hist"> {fmt(f.depart.km)} km</span>
                         </td>
+                        <td className="num" data-label={L('Mise à jour', 'Updated')}>{f.maj ?? '—'}</td>
                         <td className="res res--ico">
                           <a
                             href={f.openrunner}

@@ -23,6 +23,7 @@ import io
 import json
 import math
 import datetime as dt
+import re
 from collections import Counter, defaultdict
 
 import openpyxl
@@ -464,6 +465,16 @@ def nom_ville(v):
     return " ".join(out).replace(" - ", "-")
 
 
+def annee_maj(hist_maj, pdf):
+    """Année de mise à jour : colonne MAJ de l'onglet Parcours, sinon année de
+    publication de la feuille de route officielle (dossier uploads/AAAA/)."""
+    m = re.search(r"(20\d\d)", s(hist_maj))
+    if m:
+        return int(m.group(1))
+    m = re.search(r"/uploads/(\d{4})/", pdf or "")
+    return int(m.group(1)) if m else None
+
+
 def parse_controles(path=CALC):
     """Onglet Etapes du calculateur officiel : contrôles et km cumulés depuis Paris."""
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
@@ -700,6 +711,7 @@ def main():
                        "coords": list(COORDS_DEPART.get(dec[0], (None, None)))},
             "openrunner": openr, "pdf": pdf,
             "controles": controles.get(nom, []),
+            "maj": annee_maj(hist.get("maj"), pdf),
             "coords": list(COORDS_ARRIVEE[nom]),
             "hist": {"km": hist.get("km"), "dplus": hist.get("dplus"), "maj": hist.get("maj"),
                      "catKm": hist.get("catKm"), "catDplus": hist.get("catDplus"),
